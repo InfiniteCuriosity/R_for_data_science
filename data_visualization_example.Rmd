@@ -170,4 +170,33 @@ It adds stroke to the shape - the outline surrounding a shape
 6 What happens if you map an aesthetic to something other than a variable name, like aes(colour = displ < 5)?
 This set of commands returns errors and halts execution
 
+# 3.5 Facets
+
+When doing a facet on one variable (such as class), use facet_wrap:
+```{r}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=mpg$displ, y=mpg$cty)) +
+  facet_wrap(~class, nrow=2)
+```
+
+when using 2 factors, use facet_grid (note this is set to 4 rows, but that can be changed):
+
+```{r}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=mpg$displ, y=mpg$cty)) +
+  facet_wrap(~cty, nrow=4)
+```
+
+### 3.5.1 Exercises
+
+1. What happens if you facet on a continuous variable, for example milage in the city? (noted as cty in the data)
+
+```{r}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=mpg$displ, y=mpg$cty)) +
+  facet_wrap(~cty, nrow=4)
+```
 
