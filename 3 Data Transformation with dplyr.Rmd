@@ -144,3 +144,56 @@ sum(is.na(flights$air_time))
 
 These might show any number of issues, such as staff shortages, data entry problems, etc.
 
+## 5.3 Arrange rows with Arrange
+
+```{r}
+arrange(flights, year, month, day)
+```
+
+use desc() to list in descending order:
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+## 5.3.1 Exercises
+
+How could you use arrange() to sort all missing values to the start? (Hint: use is.na()).
+
+```{r}
+arrange(flights,desc(is.na(dep_delay)),desc(is.na(dep_time)), desc(is.na(arr_time)), desc(is.na(arr_delay)),
+        desc(is.na(air_time)))
+```
+
+Sort flights to find the most delayed flights. 
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+Find the flights that left earliest.
+
+```{r}
+arrange(flights, dep_time)
+```
+
+Sort flights to find the fastest flights.
+
+```{r}
+arrange(flights, desc(time_hour))
+```
+
+Which flights travelled the longest?
+
+```{r}
+arrange(flights, desc(air_time))
+```
+
+Which flights traveled the shortest?
+
+```{r}
+arrange(flights, air_time)
+```
+
+
+Which travelled the shortest?
