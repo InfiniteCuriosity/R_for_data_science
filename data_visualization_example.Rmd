@@ -10,7 +10,7 @@ library(ggplot2)
 mpg
 ```
 
-
+#3.2 First Steps
 Let's start by looking at a scatterplot of engine size (displacement) vs highway mileage (hwy), and answer this question:
 Do cars with bigger enginues user more gas? Let's look at the graph of mpg vs engine size
 Let's start by looking at a ggplot of the data:
@@ -22,10 +22,10 @@ ggplot(data = mpg,mapping = aes(x=displ, y=hwy)) +
 ```
 
 
-3.2.4 Exercises
+###3.2.4 Exercises
 
 1. Run ggplot(data = mpg). What do you see?
-```{r, echo=FALSE}
+```{r}
 library(ggplot2)
 ggplot(data=mpg)
 ```
@@ -33,7 +33,7 @@ ggplot(data=mpg)
 Answer: A blank plot   
 
 2. How many rows are in mpg? How many columns?
-```{r, echo=FALSE}
+```{r}
 library(ggplot2)
 print(paste0("number of rows in mpg = ",nrow(mpg)))
 print(paste0("number of columns in mpg = ",ncol(mpg)))
@@ -41,7 +41,7 @@ print(paste0("number of columns in mpg = ",ncol(mpg)))
 
 What does the drv variable describe? Read the help for ?mpg to find out.
 
-```{r, echo=FALSE}
+```{r}
 library(ggplot2)
 ?mpg
 ```
@@ -50,7 +50,7 @@ The drv variable describes the types of drive systems on the cars:
 f = front-wheel drive, r = rear wheel drive, 4 = 4wd
 
 4. Make a scatterplot of hwy vs cyl.
-```{r, echo=FALSE}
+```{r}
 library(ggplot2)
 ggplot(data=mpg) +
   geom_point(mapping = aes(x=hwy, y=cyl))
@@ -58,11 +58,116 @@ ggplot(data=mpg) +
 
 5. What happens if you make a scatterplot of class vs drv? Why is the plot not useful?
 
-```{r, echo=FALSE}
+```{r}
 library(ggplot2)
 ggplot(mpg, aes(x=class, y=drv)) +
   geom_point() 
 ```
 
 The plot of class vs drv does not provide useful information.
+
+#3.3 Aesthetic Mappings
+
+Separate class of the cars by color (note aes in geom_point to get the color):
+```{r}
+library(ggplot2)
+ggplot(mpg, aes(y=hwy, x=displ)) +
+         geom_point(aes(color=class))
+```
+
+What does the data look like if we map class to size?
+
+```{r}
+library(ggplot2)
+ggplot(mpg, aes(y=hwy, x=displ)) +
+         geom_point(aes(size=class))
+```
+
+We can also map class to alpha (transparency), or shape, we follows:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+
+```
+
+Set the entire data set to the color blue. Note that the color command goes outside of the aes command:
+
+```{r}
+library(ggplot2)
+ggplot(mpg)+
+  geom_point(mapping=aes(y=hwy, x=displ), color="blue")
+```
+
+### 3.3.1 Exercises
+
+1. What's wrong with this code? Why aren't the points blue?
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+The points are not blue because the color command goes *outside* of the aes command if it pertains to all points:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+2. Which variables in mpg are categorical? Which variables are continuous?
+
+```{r}
+library(ggplot2)
+str(mpg)
+```
+
+Categorical: Manufacturer, Model, Trans, Drv, Fl, Class <br>
+Continuous: displ, year, cyl, cty, hwy
+
+3. Map a continuous variable to color, size, and shape. How do these aesthetics behave differently for categorical vs. continuous variables?
+
+Three examples of continuous variables:
+```{r, warning=FALSE}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=displ, y=cty), color=mpg$hwy)
+
+ggplot(mpg) +
+  geom_point(aes(x=displ, y=cty), size=mpg$hwy)
+
+ggplot(mpg) +
+  geom_point(aes(x=displ, y=cty), shape=mpg$hwy)
+```
+
+An example of discrete variable mapping, this gives multiple errors and halts execution:
+
+4. What happens if you map the same variable to multiple aesthetics?
+
+```{r}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=mpg$displ, y=mpg$cty), color=mpg$displ, shape=mpg$displ, size=mpg$displ)
+```
+
+It works, lots of layers on the same plot
+
+5. What does the stroke aesthetic do? What shapes does it work with?
+
+```{r}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=mpg$displ, y=mpg$cty), stroke=mpg$cty)
+```
+
+It adds stroke to the shape - the outline surrounding a shape
+
+6 What happens if you map an aesthetic to something other than a variable name, like aes(colour = displ < 5)?
+This set of commands returns errors and halts execution
+
 
