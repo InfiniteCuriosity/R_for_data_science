@@ -578,3 +578,238 @@ ggplot(data = diamonds) +
 ```
 
 # 3.8 Position Adjustments
+
+It's possible to add color to a bar chart (or other charts?) using color or fill. Note the color outline on the bars
+on the first chart:
+
+```{r}
+library(tidyverse)
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, colour = cut))
+```
+
+Color bars:
+
+```{r}
+library(tidyverse)
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = cut))
+```
+
+If color is mapped to a factor with multiple levels, such as Clarity in the Diamonds data set, we get:
+
+```{r}
+library(tidyverse)
+ggplot(data=diamonds) +
+  geom_bar(mapping = aes(x=cut, fill=clarity))
+```
+
+Note there are three other options:
+
+1. Position = Identity (note that Identity is the defaul for 2d geoms), it creates overlaps, which is why
+alpha is reduced:
+```{r}
+library(tidyverse)
+ggplot(data=diamonds, mapping = aes(x=cut, fill=clarity)) +
+  geom_bar(alpha=1/5, position="identity")
+```
+
+
+2. Position = "dodge" instead places overlapping objects <i>beside</i> one another
+```{r}
+library(tidyverse)
+ggplot(data=diamonds, mapping = aes(x=cut, fill=clarity)) +
+  geom_bar(alpha=3/5, position="dodge")
+```
+
+3. Position = fill - this makes all the bars the same height
+
+```{r}
+library(tidyverse)
+ggplot(data=diamonds, mapping = aes(x=cut, fill=clarity)) +
+  geom_bar(position="fill")
+```
+
+4. Position = "jitter" is very good for basic scatter plots. Recall our first scatterplot, it shows 126 points
+and we can not tell (for example) if one pair of values has 109 points on the graph, even if the size
+of the points are changed:
+
+```{r}
+library(tidyverse)
+ggplot(mpg,mapping = aes(x=displ, y=hwy))+
+  geom_point(mapping = aes(x=displ, y=hwy),size=0.005)
+```
+
+but the actual data set has 234 observations. How to show all the observations? Use "jitter" and reduce
+the point size:
+
+```{r}
+library(tidyverse)
+ggplot(mpg,mapping = aes(x=displ, y=hwy))+
+  geom_point(mapping = aes(x=displ, y=hwy),position = "jitter", size=0.0005)
+```
+
+## 3.8.1 Exercises
+
+1. What is the problem with this plot? How would you improve it?
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+One solution to show all the points is to add jitter and reduce the point size:
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point(mapping = aes(x = cty, y = hwy), position="jitter", size=0.0005)
+```
+
+2. What parameters to geom_jitter() control the amount of jittering?
+
+```{r}
+?geom_jitter
+```
+
+The position adjustment, color, size, width of jitter, height of jitter
+
+3. Compare and contrast geom_jitter() with geom_count().
+
+geom_jitter() adds variation to each point, so it's easier to see points
+geom_count will count overlapping points
+
+4. What’s the default position adjustment for geom_boxplot()? It is "dodge". Create a visualisation of the mpg dataset that demonstrates it.
+
+(note that ggplot requires values for x an y, this substitutes "" for x, giving the boxplot for city mileage)
+```{r}
+ggplot(data=mpg) +
+  geom_boxplot(mapping = aes(x=mpg$trans, y=cty, group=mpg$trans), position="dodge")
+```
+
+Here is an example of the same graph using position = "identity":
+
+```{r}
+ggplot(data=mpg) +
+  geom_boxplot(mapping = aes(x=mpg$trans, y=cty, group=mpg$trans), position="identity")
+```
+
+# 3.9 Coordinate Systems
+
+For example, coord_flip is good for horizontal boxplots. Here is a regular boxplot:
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+```
+
+Here is the same boxplot in a horizontal plot:
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+
+Another example is coord_quickmap, which plots maps. This is a map of the lower 48 states with <i>incorrect</i> proportions:
+
+```{r}
+library(tidyverse)
+install.packages("maps")
+usa <- map_data("usa")
+
+ggplot(usa, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black")
+```
+
+This is a map of the lower 48 states with correct proportions:
+
+```{r}
+library(tidyverse)
+library("maps")
+usa <- map_data("usa")
+
+ggplot(usa, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") +
+  coord_quickmap()
+```
+
+coord_polar uses polar coordinates, and that can reveal many interesting relationships that
+might not be obvious from other charts, such as a bar chart:
+
+```{r}
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+```
+
+## 3.9.1 Exercises
+
+1. Turn a stacked bar chart into a pie chart using polar_coord()
+
+```{r}
+library(tidyverse)
+bar1 <- ggplot(data=diamonds, mapping = aes(x=cut, fill=clarity)) +
+  geom_bar(alpha=4/5, position="identity")
+
+bar1+coord_polar()
+```
+
+2. What does labs() do? Read the documentation.
+
+```{r}
+?labs
+```
+
+Good labels will:
+1. Ensure x and y axes are easily understood
+2. Plot title will let people know the subject/topic of the plot
+3. Captions can be used to help the reader understand the plot in more detail
+
+3. What’s the difference between coord_quickmap() and coord_map()?
+
+Here is coord_quickmap():
+
+```{r}
+library(tidyverse)
+library("maps")
+usa <- map_data("usa")
+
+ggplot(usa, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") +
+  coord_quickmap()
+```
+
+Here is an example of quickmap that shows the lower 48 states:
+
+```{r}
+library(tidyverse)
+library(evaluate)
+states <- map_data("state")
+usamap <- ggplot(states, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black")
+usamap + coord_quickmap()
+
+```
+
+4. What does the plot below tell you about the relationship between city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+
+This shows that highway and city mileage tend to go up together. As one goes up, the other goes up, too.
+geom_abline() draws a straight line that shows the straight line relationship between highway and city mileage.
+
+Why is coord_fixed() important?
