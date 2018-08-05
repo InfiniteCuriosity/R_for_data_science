@@ -279,3 +279,302 @@ ggplot(data=mpg) +
   geom_point(mapping = aes(x=displ, y=cty, color=drv))
 ```
 
+Let's look at grouping and how that impacts the plot:
+
+First, no grouping:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy)) 
+```
+
+Now group by drive system:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv))
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg)+
+  geom_smooth(mapping = aes(x=displ, y=hwy, color=drv),
+              show.legend = FALSE)
+```
+
+Here is an example of showing multiple geoms on the same plot:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+
+ggplot(data=mpg,mapping = aes(x=displ, y=cty)) +
+  geom_point(mapping = aes(color=class)) +
+  geom_smooth()
+```
+
+Let's look at how to filter (more on that later) for a specific variable:
+
+```{r}
+library(ggplot2)
+library(dplyr)
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+```
+
+## 3.6.1 Exercises
+
+1. What geom would you use to draw a line chart? geom_line()
+A boxplot? geom_box()
+A histogram? geom_hist()
+An area chart? geom_area()
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_line(mapping = aes(x=displ, y=hwy))
+
+#boxplot
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_boxplot()
+
+#histogram
+ggplot(data = mpg, mapping = aes(x=hwy)) + 
+  geom_histogram()
+
+# area cheart
+ggplot(data = mpg, mapping = aes(x=hwy, y=displ)) + 
+  geom_area()
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+
+2. Run this code in your head and predict what it will do, then see what it actually looks like:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+3. What does show.legend = FALSE do? Removes the legend for the graph
+What happens if you remove it? Show the legend, if there is one
+Why do you think I used it earlier in the chapter? To show the legend :)
+
+4. What does the se argument to geom_smooth() do?
+It shows the standard error for the line/point/etc.
+here is se=FALSE:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+Here is se=TRUE
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = TRUE)
+```
+
+5. Will these two graphs look different? Why/why not? - they will look the same.
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+6. Recreate the R code necessary to generate the following graphs. (A few of these were a very fun challenge!)
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=displ, y=hwy)) +
+  geom_smooth(mapping=aes(x=displ, y=hwy),se=FALSE)
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=displ, y=hwy)) +
+  geom_smooth(mapping=aes(x=displ, y=hwy, group=drv),se=FALSE)
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=displ, y=hwy, color=drv)) +
+  geom_smooth(mapping=aes(x=displ, y=hwy),se=FALSE)
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=displ, y=hwy, color=drv)) +
+  geom_smooth(mapping=aes(x=displ, y=hwy, group=drv, linetype=drv),se=FALSE)
+```
+
+Note - I have not yet been able to reproduce the sixth graph in that set.
+
+# 3.7 Statistical Transformations
+
+Interesting question - where do the y-axis values come from in this plot, since they are not in the data set?
+
+```{r}
+library(ggplot2)
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+```
+
+The previous chart can be reproduced using stat_count as well as geom_bar:
+
+```{r}
+library(ggplot2)
+ggplot(data = diamonds) + 
+  stat_count(mapping = aes(x = cut))
+```
+
+An example where the y value is in the data set alreadey (note the use of stat="identity":
+
+```{r}
+library(tidyverse)
+demo <- tribble(
+  ~cut,         ~freq,
+  "Fair",       1610,
+  "Good",       4906,
+  "Very Good",  12082,
+  "Premium",    13791,
+  "Ideal",      21551
+)
+
+ggplot(data=demo) +
+  geom_bar(mapping = aes(x=cut, y=freq), stat="identity")
+
+```
+
+It is possible to override the defauls and show proportions (note the use of ..prop..):
+
+```{r}
+library(ggplot2)
+ggplot(data=diamonds)+
+  geom_bar(mapping = aes(x=cut, y=..prop.., group=1))
+```
+
+Here is another way to calculate a "stat summary", to summarize y-values for distinct x-values:
+
+```{r}
+
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=diamonds) +
+  stat_summary(
+    mapping = aes(x=cut, y=depth),
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y=median
+  )
+```
+
+## 3.7.1 Exercises
+
+1. What is the default geom associated with stat_summary()? 
+```{r}
+library(ggplot2)
+?stat_summary
+```
+
+stat_summary_bin(mapping = NULL, data = NULL, geom = "pointrange"...
+so the default geom is pointrange
+
+How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+```{r}
+library(tidyverse)
+ggplot(data=diamonds) +
+  geom_pointrange(
+    mapping = aes(x=cut, y=depth),
+    ymin = min(diamonds$depth),
+    ymax = max(diamonds$depth)
+  )
+```
+
+2. What does geom_col() do? How is it different to geom_bar()?
+
+```{r}
+library(tidyverse)
+?geom_col
+```
+
+From the help file: geom_col uses stat_identity: it leaves the data as is.
+
+3. Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
+
+The names are consistent:
+(geom_bar OR geom_col) and stat_count
+geom_boxplot and stat_boxplot
+geom_bin2d and stat_bin_2d
+geom_contour and stat_contour
+geom_count and stat_sum
+geom_density and stat_density
+geom_density_2d and stat_density_2d
+geom_hex and stat_bin_hex
+(geom_freqpoly OR geom_histogram) and stat_bin
+geom_qq and stat_qq
+geom_quantile and stat_quantile
+geom_ribbon and geom_area
+geom_segment and geom_curve
+geom_smooth and stat_smooth
+geom_label and geom_text
+geom_violin and stat_ydensity
+
+4. What variables does stat_smooth() compute? What parameters control its behaviour?
+
+```{r}
+library(tidyverse)
+?stat_smooth
+```
+
+From the help file: Aids the eye in seeing patterns in the presence of overplotting.
+
+5. In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?
+
+```{r}
+library(tidyverse)
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop..))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop..))
+```
+
+The graphs do not show accurate proportions, but using group=1 fixes this problem:
+
+```{r}
+library(tidyverse)
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop.., group=1))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop.., group=1))
+```
+
+# 3.8 Position Adjustments
