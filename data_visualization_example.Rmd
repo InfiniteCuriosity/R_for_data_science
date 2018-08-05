@@ -1,0 +1,68 @@
+---
+title: "3 Data Visualization Example"
+author: "Russ Conte"
+date: "8/4/2018"
+output: html_document
+---
+This chapter will be a look at ggplot2. ggplot2 is part of tidyverse. We will look at the mpg data set.
+```{r, echo=FALSE}
+library(ggplot2)
+mpg
+```
+
+
+Let's start by looking at a scatterplot of engine size (displacement) vs highway mileage (hwy), and answer this question:
+Do cars with bigger enginues user more gas? Let's look at the graph of mpg vs engine size
+Let's start by looking at a ggplot of the data:
+
+```{r fig.width=7, fig.height=4, echo=FALSE}
+library(ggplot2)
+ggplot(data = mpg,mapping = aes(x=displ, y=hwy)) +
+  geom_point()
+```
+
+
+3.2.4 Exercises
+
+1. Run ggplot(data = mpg). What do you see?
+```{r, echo=FALSE}
+library(ggplot2)
+ggplot(data=mpg)
+```
+
+Answer: A blank plot   
+
+2. How many rows are in mpg? How many columns?
+```{r, echo=FALSE}
+library(ggplot2)
+print(paste0("number of rows in mpg = ",nrow(mpg)))
+print(paste0("number of columns in mpg = ",ncol(mpg)))
+```
+
+What does the drv variable describe? Read the help for ?mpg to find out.
+
+```{r, echo=FALSE}
+library(ggplot2)
+?mpg
+```
+
+The drv variable describes the types of drive systems on the cars:
+f = front-wheel drive, r = rear wheel drive, 4 = 4wd
+
+4. Make a scatterplot of hwy vs cyl.
+```{r, echo=FALSE}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_point(mapping = aes(x=hwy, y=cyl))
+```
+
+5. What happens if you make a scatterplot of class vs drv? Why is the plot not useful?
+
+```{r, echo=FALSE}
+library(ggplot2)
+ggplot(mpg, aes(x=class, y=drv)) +
+  geom_point() 
+```
+
+The plot of class vs drv does not provide useful information.
+
