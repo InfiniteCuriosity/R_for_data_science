@@ -200,3 +200,82 @@ ggplot(mpg) +
   facet_wrap(~cty, nrow=4)
 ```
 
+2 What do the empty cells in plot with facet_grid(drv ~ cyl) mean? How do they relate to this plot?
+
+```{r}
+library(ggplot2)
+ggplot(mpg) +
+  geom_point(aes(x=mpg$displ, y=mpg$cty)) +
+  facet_grid(drv~cyl)
+```
+
+No values match the intersection of those variables where the plots are blank
+
+3 What plots does the following code make? What does . do?
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv~.) # facets on the drv variable
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv~.)
+```
+
+This creates facets on the drv variable
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl) 
+```
+
+This plot creates facets on the number of cylinders
+
+Let's remove the . and see what is different:
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(~cyl)
+```
+
+hmmm, no differences that I can see.
+
+# 3.6 Geometric Objects
+
+Left plot in the book:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+Right plot in the book:
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+How to set up different linetypes by a factor (in this case the drv variable, the car's drivetrain)
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_smooth(mapping = aes(x=displ, y=cty, linetype=drv))
+```
+
+Also vary by color according to color:
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg) +
+  geom_smooth(mapping = aes(x=displ, y=cty, linetype=drv, color=drv)) +
+  geom_point(mapping = aes(x=displ, y=cty, color=drv))
+```
+
