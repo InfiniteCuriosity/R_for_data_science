@@ -54,3 +54,93 @@ jan1 <- filter(flights, day==1, day==1)
 jan1
 ```
 
+To both print out the results AND save them to a variable, wrap them in parentheses:
+
+```{r}
+jan10 <- filter(flights, day==10, month==1)
+```
+
+## 5.2.4 Exercises
+
+1. Find all flights that had:
+
+A. Had an arrival delay of two or more hours
+
+```{r}
+filter(flights, arr_delay>120, dep_delay>120)
+```
+
+B. Flew to Houston (IAH or HOU)
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+flights
+filter(flights, dest==c("HOU", "IAH"))
+```
+
+3. Were operated by United, American, or Delta
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+filter(flights, carrier==c("UA", "AA", "DL"))
+
+```
+
+4. Departed in summer (July, August, and September)
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+filter(flights, month==c(7,8,9))
+
+```
+
+Arrived more than two hours late, but didn’t leave late
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+filter(flights, arr_delay>120, dep_delay<=0)
+```
+
+Were delayed by at least an hour, but made up over 30 minutes in flight
+
+```{r}
+filter(flights, arr_delay<=30, dep_delay>=60)
+```
+
+Departed between midnight and 6am (inclusive)
+
+```{r}
+filter(flights, dep_time<0600)
+```
+
+2. Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges?
+
+Between is useful for finding values between to given values, such as x is between 2 and 5
+
+```{r}
+filter(flights, between(dep_time, 0000,0600))
+```
+
+3. How many flights have a missing dep_time?
+
+```{r}
+sum(is.na(flights$dep_time))
+```
+
+What other variables are missing? What might these rows represent?
+
+```{r}
+colnames(flights)[colSums(is.na(flights)) > 0]
+sum(is.na(flights$dep_time))
+sum(is.na(flights$dep_delay))
+sum(is.na(flights$arr_time))
+sum(is.na(flights$arr_delay))
+sum(is.na(flights$air_time))
+```
+
+These might show any number of issues, such as staff shortages, data entry problems, etc.
+
