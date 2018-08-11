@@ -13,7 +13,7 @@ library(nycflights13)
 library(tidyverse)
 ```
 
-Let's have a look at the flights data set:
+Let's have a look at the flights data set (note - this is a tibble, more on that later):
 
 ```{r}
 flights
@@ -39,7 +39,7 @@ How this works:
 
 1. The first argument is the data frame
 2. The second argument is the action (filter, arrange, etc)
-3. The result is a new (not saved) data frame
+3. The result is a new (<i>not saved</i>) data frame
 
 Let's filter the flights to show flights on January 1, for all years:
 
@@ -57,14 +57,14 @@ jan1
 To both print out the results AND save them to a variable, wrap them in parentheses:
 
 ```{r}
-jan10 <- filter(flights, day==10, month==1)
+(jan10 <- filter(flights, day==10, month==1))
 ```
 
 ## 5.2.4 Exercises
 
 1. Find all flights that had:
 
-A. Had an arrival delay of two or more hours
+A. Had an arrival delay of two or more hours (120 minutes)
 
 ```{r}
 filter(flights, arr_delay>120, dep_delay>120)
@@ -73,48 +73,37 @@ filter(flights, arr_delay>120, dep_delay>120)
 B. Flew to Houston (IAH or HOU)
 
 ```{r}
-library(tidyverse)
-library(nycflights13)
-flights
-filter(flights, dest==c("HOU", "IAH"))
+filter(flights, dest %in% c("HOU", "IAH"))
 ```
 
 3. Were operated by United, American, or Delta
 
 ```{r}
-library(tidyverse)
-library(nycflights13)
-filter(flights, carrier==c("UA", "AA", "DL"))
-
+filter(flights, carrier %in% c("UA", "AA", "DL"))
 ```
 
 4. Departed in summer (July, August, and September)
 
 ```{r}
-library(tidyverse)
-library(nycflights13)
-filter(flights, month==c(7,8,9))
-
+filter(flights, month %in% c(7,8,9))
 ```
 
 Arrived more than two hours late, but didn’t leave late
 
 ```{r}
-library(tidyverse)
-library(nycflights13)
 filter(flights, arr_delay>120, dep_delay<=0)
 ```
 
 Were delayed by at least an hour, but made up over 30 minutes in flight
 
 ```{r}
-filter(flights, arr_delay<=30, dep_delay>=60)
+filter(flights, dep_delay>=60, arr_delay<=30)
 ```
 
 Departed between midnight and 6am (inclusive)
 
 ```{r}
-filter(flights, dep_time<0600)
+filter(flights, between(dep_time, 0000, 0600))
 ```
 
 2. Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges?
@@ -174,13 +163,14 @@ arrange(flights, desc(dep_delay))
 Find the flights that left earliest.
 
 ```{r}
-arrange(flights, dep_time)
+deptime <- filter(flights, dep_time>0) #this eliminates the NAs
+arrange(deptime, dep_time)
 ```
 
 Sort flights to find the fastest flights.
 
 ```{r}
-arrange(flights, desc(time_hour))
+arrange(flights, arr_delay)
 ```
 
 Which flights travelled the longest?
@@ -197,3 +187,148 @@ arrange(flights, air_time)
 
 
 Which travelled the shortest?
+
+```{r}
+library(tidyverse)
+arrange(flights, desc(air_time))
+```
+
+## 5.4 Select columns with Select
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, year, day, month)
+```
+
+Select all columns between year and day (inclusive), note the use of the colon symbol.
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, year:day)
+```
+
+Select all columns <i><b>except</i></b> those between year and day
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, -(year:day))
+```
+
+rename is a very good function to rename variables. Do NOT use select to rename variables because select
+drops all the other variables in the data set.
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+rename(flights, tail_num=tailnum)
+```
+
+To move specific columns to the start of a data frame and keep everything, use everything():
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, time_hour, air_time, everything())
+```
+
+## 5.4.1 Exercises
+
+1. Brainstorm as many ways as possible to select dep_time, dep_delay, arr_time, and arr_delay from flights.
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, dep_time, dep_delay, arr_time, arr_delay )
+select(flights, dep_time, dep_delay, arr_time, arr_delay, everything())
+```
+
+What happens if you include the name of a variable multiple times in a select() call?
+
+Let's find out!! :)
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, day,day,day,day,day)
+```
+
+The variable only shows up one time. Nice! :)
+
+3.What does the one_of() function do? Why might it be helpful in conjunction with this vector?
+
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights, one_of(vars))
+```
+
+4. Does the result of running the following code surprise you? 
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, contains("TIME"))
+```
+
+yes it does surprise me, usually R is extremely case sensitive, but this seems to not be case sensitive.
+
+How do the select helpers deal with case by default? How can you change that default?
+
+```{r}
+library(tidyverse)
+?contains
+```
+
+From the help:
+ignore.case	 If TRUE, the default, ignores case when matching names.
+
+Thus to change the default, ignore.case=FALSE:
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+select(flights, contains("TIME",ignore.case = FALSE))
+```
+
+## 5.5 Add new variable with mutate()
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+mutate(flights_sml,
+  gain = dep_delay - arr_delay,
+  speed = distance / air_time * 60
+)
+```
+
+It is possible to refer to columns that were just created:
+
+```{r}
+mutate(flights_sml,
+  gain = dep_delay - arr_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+```
+
+Use transmute to only keep the new columns:
+
+```{r}
+transmute(flights,
+  gain = dep_delay - arr_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+```
+
