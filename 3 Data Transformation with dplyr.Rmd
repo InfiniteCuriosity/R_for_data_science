@@ -487,3 +487,26 @@ delays <- flights %>%
 delays
 ```
 
+Let's look at the mean delay by month and origin airport:
+
+```{r}
+flights %>% 
+  group_by(year, month, origin) %>% 
+  summarise(mean=mean(dep_delay, na.rm=TRUE))
+```
+
+We are going to set up a data set of not cancelled flights, and use that for the next several examples:
+
+```{r}
+not_cancelled <- flights %>%
+  filter(!is.na(dep_delay), !is.na(dep_delay))
+
+#now let's use that in an example:
+
+not_cancelled %>% 
+  group_by(year, month, origin) %>% 
+  summarise(mean=mean(dep_delay))
+```
+
+## 5.6.3 Counts
+
