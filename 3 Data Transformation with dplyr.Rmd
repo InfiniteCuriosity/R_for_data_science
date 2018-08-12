@@ -667,3 +667,26 @@ not_cancelled %>%
 
 ## 5.6.5 grouping by multiple variables
 
+Let's start by summarising by day:
+
+```{r}
+daily <- group_by(flights, year, month, day)
+per_day <- summarise(daily, flights=n())
+per_day
+```
+
+Let's summarize the same data by month:
+
+```{r}
+monthly <- group_by(flights, year, month)
+per_month <- summarise(monthly, flights=n())
+per_month
+```
+
+Now let's look at it yearly:
+
+```{r}
+per_year <- summarise(per_month, flights=sum(flights))
+per_year
+```
+
