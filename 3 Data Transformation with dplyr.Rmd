@@ -345,3 +345,23 @@ lead(x)
 lag(x)
 ```
 
+Cumulative and rolling averages - I can see lots of ways these can be used in analysis!
+
+```{r}
+x
+cumsum(x)
+library(RcppRoll)
+library(dplyr)
+cummean(x)
+
+```
+
+Ranking examples:
+
+```{r}
+y <- c(1,2,2,NA,3,4,5,6)
+min_rank(y)
+min_rank(desc(y))
+
+```
+
