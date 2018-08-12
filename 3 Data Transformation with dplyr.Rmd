@@ -510,3 +510,160 @@ not_cancelled %>%
 
 ## 5.6.3 Counts
 
+As an example, let's look at planes by tail number, and check out delays:
+
+```{r}
+delays <- not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarise(delay=mean(arr_delay))
+
+ggplot(delays, mapping=aes(x=delay)) +
+  geom_freqpoly(binwidth=10)
+```
+
+There is more to the story. Let's draw a scatterplot of number of flights vs average delay:
+
+```{r}
+delays <-  not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarise(
+    delay=mean(arr_delay, na.rm=TRUE),
+    n=n()
+    )
+
+ggplot(data=delays, mapping = aes(x=n, y=delay)) +
+  geom_point(alpha=1/10)
+
+```
+
+Let's filter for n> a given numbers, such as n>250
+
+```{r}
+delays %>% 
+  filter(n>250) %>% 
+  ggplot(mapping=aes(x=n, y=delay)) +
+  geom_point(alpha=1/10)
+
+```
+
+An example from the Lahman baseball data set, similar to above:
+
+```{r}
+# covert to a tibble so it prints nicely
+batting <- as_tibble(Lahman::Batting)
+
+batters <- batting %>% 
+  group_by(playerID) %>% 
+  summarise(
+    ba=sum(H, na.rm=TRUE)/ sum(AB, na.rm=TRUE),
+    ab=sum(AB, na.rm=TRUE)
+  )
+
+batters %>% 
+  filter(ab>100) %>% 
+
+ggplot(mapping = aes(x=ab, y=ba)) +
+  geom_point() +
+  geom_smooth(se=FALSE)
+```
+
+## 5.6.4 Useful functions
+
+Let's find out about flights with >0 average delay, by creating a logical subset of the data:
+
+```{r}
+  not_cancelled %>%
+    group_by(year, month, day) %>%
+    summarise(
+      avg_delay1 = mean(arr_delay),
+      avg_delay2 = mean(arr_delay[arr_delay>0])
+    )
+```
+
+
+Let's look at some examples of spread. For example, why is the distance to some airports more variable than to others?
+
+```{r}
+not_cancelled %>% 
+  group_by(dest) %>% 
+  summarise(distance_sd=sd(distance)) %>% 
+  arrange(desc(distance_sd))
+```
+
+Measures of rank: min(x), quantile(x, 0.25), max(x) are very useful functions. For example, what time do the first and
+last flights leave each day?
+
+```{r}
+not_cancelled %>% 
+  group_by(year, month, origin) %>% 
+  summarise(
+    first=min(dep_time),
+    last=max(dep_time)
+  )
+```
+
+Let's find the first and last flights out each day (these are position assignments)
+
+```{r}
+not_cancelled %>% 
+  group_by(year, month, origin) %>% 
+  summarise(
+    first_dep=first(dep_time),
+    last_dep=last(dep_time)
+  )
+```
+
+Note that filtering gives all values, filtering on ranks:
+
+```{r}
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  mutate(r = min_rank(desc(dep_time))) %>% 
+  filter(r %in% range(r))
+
+```
+
+Counts and missing counts. Let's look for the destinations that have the most carriers.
+
+```{r}
+not_cancelled %>% 
+  group_by(dest) %>% 
+  summarise(carriers=n_distinct(carrier)) %>% 
+  arrange(desc(carriers))
+```
+
+dplyr has a very simple and clear function if all I want is a count, see:
+
+```{r}
+flights %>%
+  count(dest)
+```
+
+It's also possible to provide a weight to a variable, such as each flight:
+
+```{r}
+not_cancelled %>% 
+  count(tailnum, wt=distance)
+```
+
+Counts and proportions of logical values:
+
+```{r}
+# How many flights left before 5am? (these usually indicate delayed
+# flights from the previous day, I'll group these by month)
+
+not_cancelled %>% 
+  group_by(year, month) %>% 
+  summarise(n_early=sum(dep_time<0500))
+```
+
+What proportion of flights are delayed over an hour?
+
+```{r}
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(hour_perc=mean(arr_delay>60))
+```
+
+## 5.6.5 grouping by multiple variables
+
