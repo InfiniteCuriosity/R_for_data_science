@@ -365,3 +365,5 @@ min_rank(desc(y))
 
 ```
 
+## 5.5.2 Exercises
+
