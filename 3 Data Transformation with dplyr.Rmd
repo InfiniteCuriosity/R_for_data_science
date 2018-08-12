@@ -441,3 +441,49 @@ sinpi(x)
 tanpi(x)
 
 ## 5.6 Grouped summaries with summarise
+
+As Hadley writes, "The last key verb is summarise(). It collapses a data frame to a single row:"
+
+```{r}
+summarise(flights, delay=mean(dep_delay, na.rm=TRUE))
+```
+
+Here is how to group data, for example by month:
+
+```{r}
+by_month <- group_by(flights, year, month)
+summarise(by_month, delay=mean(dep_delay, na.rm=TRUE))
+```
+
+Let's compare that with flights from Boston:
+
+```{r}
+boston1 <- group_by(boston, year, month)
+summarise(boston1, delay=mean(dep_delay, na.rm=TRUE))
+```
+
+## 5.6 1 The pipe: %>%
+
+Here is an interesting problem: Explore the relationship between average delay and city. We'll do it using the Pipe command %>%
+
+```{r}
+# delay <-  flights %>% 
+#   group_by(dest) %>% 
+#   summarise(
+#     count=n(),
+#     dist=mean(distance, na.rm=TRUE),
+#     delay=mean(arr_delay, na.rm=TRUE)
+#   ) %>% 
+#   filter(count>20, dest !=c("HNL"))
+
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+delays
+```
+
