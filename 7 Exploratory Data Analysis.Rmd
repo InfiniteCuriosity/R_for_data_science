@@ -249,3 +249,76 @@ nycflights13::flights %>%
 The authors say (and I totally agree) this plot does not tell us a lot, mainly because there are few missing flights compared to
 scheduled flights. They write that they will address in a future section of the book.
 
+## 7.4.1 Exercises
+
+1. What happens to missing values in a histogram? Barchart? Why is there a difference?
+
+```{r}
+miss=data.frame(a1=c(1:10,NA,NA), b=c(1:12))
+miss
+ggplot(miss) +
+  geom_histogram(mapping = aes(x=a1)) #histogram removes the rows with missing data
+
+ggplot(miss) +
+  geom_bar(mapping = aes(x=a1)) # bar also removes one row containing missing data
+
+```
+
+2. What does na.rm = TRUE do in mean() and sum()?
+
+```{r}
+miss
+mean(miss$a1) # with NA it returns NA
+
+mean(miss$a1,na.rm = TRUE) #it returns the value (5.5)
+
+sum(miss$a1) #returns NA
+
+sum(miss$a1, na.rm=TRUE) #returns the sum of 55
+```
+
+## 7.5 Covariation
+
+Covariation describes variables that vary together (such as height and weight in humans). It's not always easy to see:
+
+```{r}
+ggplot(diamonds, mapping = aes(x=price)) +
+  geom_freqpoly(mapping = aes(color=cut), binwidth=500)
+```
+
+The differences are difficult to see because the counts differ so much:
+
+```{r}
+ggplot(diamonds,aes(x=cut)) +
+  geom_bar()
+```
+
+What we'll do is standardize the values, so the area under each curve=1.
+
+```{r}
+ggplot(diamonds, mapping = aes(x=price, y=..density..)) +
+  geom_freqpoly(mapping = aes(color=cut), binwidth=500)
+```
+
+let's look at another way to visualize the data - a boxplot.
+
+```{r}
+ggplot(diamonds, aes(x=cut, y=price)) +
+  geom_boxplot(mapping = aes(color=cut))
+```
+
+Another example is to look at how highway mileage varies across class of car:
+
+```{r}
+ggplot(mpg, aes(x=class, y=hwy)) +
+  geom_boxplot(mapping = aes(color=class))
+```
+
+Let's reorder the data to make it easier to understand:
+
+```{r}
+ggplot(mpg) +
+  geom_boxplot(mapping = aes(x=reorder(class, hwy, FUN=mean), y=hwy))
+```
+
+## 7.5.1 Exercises
