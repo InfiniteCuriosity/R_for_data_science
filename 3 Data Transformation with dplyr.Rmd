@@ -455,6 +455,16 @@ by_month <- group_by(flights, year, month)
 summarise(by_month, delay=mean(dep_delay, na.rm=TRUE))
 ```
 
+Here is an example by day (we will use this later)
+
+```{r}
+by_day <- group_by(flights, year, month, day)
+  summarise(by_day, delay=mean(dep_delay, na.rm=TRUE))
+by_day
+```
+
+
+
 Let's compare that with flights from Boston:
 
 ```{r}
@@ -688,5 +698,147 @@ Now let's look at it yearly:
 ```{r}
 per_year <- summarise(per_month, flights=sum(flights))
 per_year
+```
+
+## 5.6.6 Ungrouping
+
+```{r}
+daily %>% 
+  ungroup %>% 
+  summarise(flights=n())
+```
+
+## Exercises 5.6.7
+
+A flight is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.
+
+```{r}
+flight_delay_summary <- group_by(not_cancelled, flight) %>% summarise(num_flights = n(),
+                                                                percentage_on_time = sum(arr_time == sched_arr_time)/num_flights,
+                                                                percentage_early = sum(arr_time < sched_arr_time)/num_flights, 
+                                                                percentage_15_mins_early = sum(sched_arr_time - arr_time == 15)/num_flights,
+                                                                percentage_late = sum(arr_time > sched_arr_time)/num_flights,
+                                                                percentage_15_mins_late = sum(arr_time - sched_arr_time == 15)/num_flights,
+                                                                percentage_2_hours_late = sum(arr_time - sched_arr_time == 120)/num_flights)
+flight_delay_summary
+flight_delay_summary %>% filter(percentage_15_mins_early == 0.5 & percentage_15_mins_late == 0.5)
+# answer helped by the solution given by Max Conway: https://github.com/maxconway/r4ds_solutions/blob/master/transform_solutions.Rmd#a-flight-is-15-minutes-early-50-of-the-time-and-15-minutes-late-50-of-the-time
+```
+
+
+A flight is always 10 minutes late
+
+```{r}
+flight_delay_summary <- group_by(not_cancelled, flight) %>% summarise(num_flights = n(),
+                                                                percentage_10_mins_late = sum(sched_arr_time - arr_time == 10)/num_flights)
+filter(flight_delay_summary, percentage_10_mins_late==1)
+filter(not_cancelled, flight%in%c(4098,2663,5831,6103))
+```
+
+A flight is 30 minutes early 50% of the time and 30 minutes late 50% of the time. No flight meets both conditions.
+
+```{r}
+flight_delay_summary <- group_by(not_cancelled, flight) %>% summarise(num_flights = n(),
+                                                                percentage_30_mins_early = sum(sched_arr_time - arr_time == -30)/num_flights)
+flight_delay_summary
+filter(flight_delay_summary,percentage_30_mins_early==0.50) #30 minutes early, only one flight, #3589
+
+flight_delay_summary <- group_by(not_cancelled, flight) %>% summarise(num_flights = n(),
+                                                                percentage_30_mins_late = sum(sched_arr_time - arr_time == 30)/num_flights)
+flight_delay_summary
+filter(flight_delay_summary,percentage_30_mins_late==0.50) #only one flight, it is flight 5335
+
+```
+
+99% of the time a flight is on time, 1% of the time it is 2 hours late. No flights are on time 99% of the time.
+Flights 1061 and 4397 are two hours late 1% of the time:
+
+```{r}
+# see which flights are on time 99% of the time
+flight_delay_summary <- group_by(not_cancelled, flight) %>% summarise(num_flights = n(),
+                                                                percentage_on_time = sum(arr_time == sched_arr_time)/num_flights)
+filter(flight_delay_summary, percentage_on_time==0.99) # no flights match these conditions
+
+# see which flights are 2 hours late 1% of the time
+flight_delay_summary <- group_by(not_cancelled, flight) %>% summarise(num_flights = n(),
+                                                                two_hours_late = sum(arr_time - sched_arr_time==2)/num_flights)
+filter(flight_delay_summary, two_hours_late==0.01)
+
+                                                                
+```
+
+Come up with another approach that will give you the same output as not_cancelled %>% count(dest) and not_cancelled %>% count(tailnum, wt = distance) (without using count())
+
+```{r}
+not_cancelled %>% count(dest)
+
+destination_summary <- group_by(not_cancelled, dest) %>% summarise(num_flights = n())
+destination_summary
+```
+
+Here are the calculations using count():
+
+```{r}
+not_cancelled %>% count(tailnum, wt = distance)
+```
+
+Here is one way to do the same without using count():
+
+```{r}
+group_by(not_cancelled, tailnum, distance)%>% 
+  summarise(num_flights = n()) %>% 
+  mutate(n=distance*num_flights) %>% 
+  group_by(tailnum,sum(n)) %>% 
+  summarise()
+```
+
+Our definition of cancelled flights (is.na(dep_delay) | is.na(arr_delay) ) is slightly suboptimal. Why? Which is the most important column?
+
+```{r}
+summary(flights$dep_delay)
+summary(flights$arr_delay)
+#the data shows 8,255 flights with missing data for dep_delay, but 9,430 with missing data for arr_delay.
+#clearly something is not consistent here and our analysis does not address this fact.
+
+```
+
+
+Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+
+```{r}
+cancelled <- filter(flights, is.na(dep_time)) %>% 
+  count(day)
+cancelled
+
+ggplot(data = cancelled,mapping = aes(x=day, y=n)) +
+  geom_col()
+```
+
+
+Proportion of cancelled flights vs delays:
+
+```{r}
+by_day <- group_by(flights, day)
+by_day <- summarise(by_day, delay=mean(dep_delay, na.rm=TRUE))
+by_day
+
+df <- data.frame(by_day, cancelled)
+df
+
+#plot day vs delay:
+
+ggplot(data = df,mapping = aes(day, y=delay)) +
+  geom_point()
+
+```
+
+Which carrier has the worst delays?
+
+```{r}
+select(not_cancelled, arr_delay, carrier)%>% 
+  group_by(carrier, arr_delay) %>% 
+  summarise(delay1=mean(arr_delay, na.rm=TRUE)) %>% 
+  arrange(desc(delay1))
+
 ```
 
