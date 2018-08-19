@@ -1,0 +1,159 @@
+---
+title: "7 Exploratory Data Analysis"
+author: "Russ Conte"
+date: "8/19/2018"
+output: html_document
+---
+
+Hadley and Garrett state that in Exploratory Data Analysis (EDA) you:
+      Generate questions about your data.
+      Search for answers by visualising, transforming, and modelling your data.
+      Use what you learn to refine your questions and/or generate new questions.
+
+##7.1.1 Prerequisites for EDA:
+
+```{r}
+library(tidyverse)
+```
+
+From the text: Your goal during EDA is to develop an understanding of your data. The easiest way to do this is to <i><b>use questions as tools to guide your investigation</i></b>. When you ask a question, the question focuses your attention on a specific part of your dataset and helps you decide which graphs, models, or transformations to make.
+
+Two types of questions will always be useful for making discoveries within your data. You can loosely word these questions as:
+
+    What type of <i>variation</i> occurs <i>within</i> my variables?
+
+    What type of <i>covariation<i/> occurs <i>between</i> my variables?
+
+##7.3 Variation
+
+From the text (this is another fantastic truth in the text!): "The best way to understand that pattern is to visualise the distribution of the variable’s values."
+
+##7.3.1 Visualizing distributions
+
+An example of the distribution of a categorical variable:
+
+```{r}
+ggplot(data=diamonds) +
+  geom_bar(mapping=aes(x=cut))
+```
+
+Note the height of the bars = count by type of cut. These values can be shown directly:
+
+```{r}
+diamonds %>% 
+  count(cut)
+```
+
+One way to look at <i>continuous</i> values is via a histogram:
+
+```{r}
+diamonds
+ggplot(data=diamonds) +
+  geom_histogram(mapping = aes(x=price),binwidth = 10)
+```
+
+Interesting idea: Let's look at count of diamonds with carat<3:
+
+```{r}
+smaller <- filter(diamonds, carat<3)
+bigger <- filter(diamonds, carat>=3)
+
+ggplot(data=smaller)+
+  geom_histogram(mapping = aes(x=carat), binwidth = 0.01)
+
+ggplot(data=bigger)+
+  geom_histogram(mapping = aes(x=carat), binwidth = 0.001)
+```
+
+One way to put multiple plots on the same graph is to use freqploy:
+
+```{r}
+smaller
+ggplot(data=smaller, mapping=aes(x=carat, color=cut))+
+  geom_freqpoly(binwidth=0.1)
+
+ggplot(data=smaller, mapping=aes(x=carat, color=color))+
+  geom_freqpoly(binwidth=0.1)
+
+ggplot(data=smaller, mapping=aes(x=carat, color=price))+
+  geom_freqpoly(binwidth=0.1)
+```
+
+Another great line from Hadley and Garrett:
+
+"The key to asking good follow-up questions will be to rely on your curiosity (What do you want to learn more about?) as well as your skepticism (How could this be misleading?)."
+
+##7.3.2 Typical Values
+
+As an example of typical questions, look at this histogram:
+
+```{r}
+ggplot(data=smaller) +
+  geom_histogram(mapping = aes(x=carat),binwidth = 0.01)
+```
+
+The authors ask a few good questions, here are some answers:
+
+Why are there more diamonds at whole carats and common fractions of carats?
+I don't know, it is a testable question that diamonds in this set were cut to those specifications, but that is a hypothesis not a fact
+
+Why are there more diamonds slightly to the right of each peak than there are slightly to the left of each peak?
+Possibly because those diamonds sell for a higher cost than diamonds slightly below whole value of carats. That is a hypothesis not a fact
+
+Why are there no diamonds bigger than 3 carats?
+Because the data set removed all diamonds >3 carats.
+
+Let's practice wit data of eruptions of Old Faithful in Yellowstone:
+
+```{r}
+faithful
+ggplot(data=faithful) +
+  geom_histogram(mapping = aes(x=eruptions),binwidth = 0.25)
+```
+
+##7.3.3 Unusual values (outliers)
+
+Notice there are no visible values >10, but the x-axis extends out to 60. There are some values >10, but not many. Let's investigate!
+
+```{r}
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x=y), binwidth = 0.5)
+```
+
+```{r}
+ggplot(diamonds)+
+  geom_histogram(mapping = aes(x=y), binwidth = 0.5)+
+  coord_cartesian(ylim=c(0,50))
+```
+
+Let's use dplyr to find the three values that are outliers:
+
+```{r}
+unusual <- diamonds %>% 
+  filter(y<3 | y>20) %>% 
+  select(price, x,y,z) %>% 
+  arrange(y)
+unusual
+```
+
+More great advice from Hadley and Garrett:
+
+"It’s good practice to repeat your analysis with and without the outliers. If they have minimal effect on the results, and you can’t figure out why they’re there, it’s reasonable to replace them with missing values, and move on. However, if they have a substantial effect on your results, you shouldn’t drop them without justification. You’ll need to figure out what caused them (e.g. a data entry error) and disclose that you removed them in your write-up."
+
+##7.3.4 Exercises
+
+Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+
+```{r}
+ggplot(data=diamonds)+
+  geom_histogram(mapping = aes(x=x),binwidth = 0.25)
+
+ggplot(data=diamonds)+
+  geom_histogram(mapping = aes(x=y),binwidth = 0.25)
+
+ggplot(data=diamonds)+
+  geom_histogram(mapping = aes(x=z),binwidth = 0.25)
+
+```
+
+Note: The x and y values range from 0 through 60, z values range from 0 to approximately 30.
