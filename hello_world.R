@@ -7,3 +7,5 @@ print("Here is line three")
 
 # now we are going to add a sixth line and see what happens
 
+print("Add some more text")
+print("Here is all sorts of garbage here")
