@@ -322,3 +322,6 @@ ggplot(mpg) +
 ```
 
 ## 7.5.1 Exercises
+
+This is a test.
+Here is another line.
