@@ -443,3 +443,138 @@ diamonds %>%
   geom_tile(mapping = aes(fill=n))
 ```
 
+## 7.5.3 Two Continuous Variables
+
+One way to see the relationship between two continuous variables is with a scatterplot:
+
+```{r}
+library(tidyverse)
+ggplot(diamonds, aes(x=carat, y=price)) +
+  geom_point()
+```
+
+Let's see how this looks using the package 'hexbin':
+
+```{r}
+library(tidyverse)
+ggplot(smaller) +
+  geom_bin2d(aes(x=carat, y=price))
+```
+
+```{r}
+library(hexbin)
+ggplot(smaller) +
+  geom_hex(aes(x=carat, y=price))
+```
+
+Another very interesting example is to bin a continuous variable (such as carat), and then use the tools
+to plot categorical variables. The first soluation puts approximately the same value of carate, the width is independent of the number of observations (note 'cut_width'):
+
+```{r}
+ggplot(smaller, aes(x=carat, y=price)) +
+  geom_boxplot(aes(group=cut_width(carat, 0.1)))
+```
+
+To plot depending on the number of observations (note 'cut_number'):
+
+```{r}
+library(tidyverse)
+ggplot(smaller, aes(x=carat, y=price)) +
+  geom_boxplot(aes(group=cut_number(carat, 20)))
+```
+
+## 7.5.3.1 Exercises:
+
+1. Instead of summarising the conditional distribution with a boxplot, you could use a frequency polygon. What do you need to consider when using cut_width() vs cut_number()? How does that impact a visualisation of the 2d distribution of carat and price?
+
+cut_number puts the same number of observations into each bin, cut_width makes each bin the same size.
+
+2. Visualize carat, partitioned by price.
+
+```{r}
+library(tidyverse)
+ggplot(diamonds, aes(x=carat, y=price)) +
+  geom_boxplot(aes(group=cut_number(price, 10)))
+```
+
+3. How does the price distribution of very large diamonds compare to small diamonds? Is it as you expect, or does it surprise you?
+
+```{r}
+very_large <- filter(diamonds, carat>2)
+small <- filter(diamonds, carat<1)
+library(tidyverse)
+ggplot(very_large, aes(x=carat, y=price)) +
+  geom_boxplot()
+
+ggplot(small, aes(x=carat, y=price)) +
+  geom_boxplot(aes(group=cut_number(price, 10)))
+
+```
+
+Analysis: There are fewer large diamonds than small diamonds. The price distribution of very large diamonds is
+much narrower than small diamonds. The few large diamonds are in one boxplot, but the many more smaller diamonds
+are in 10 boxplots.
+
+4. Combine two of the techniques you’ve learned to visualise the combined distribution of cut, carat, and price.
+
+```{r}
+library(tidyverse)
+ggplot(diamonds, aes(x=cut, y=carat)) +
+  geom_boxplot(aes(group=cut_number(price, 10)))
+```
+
+5. Why is a scatterplot better than a binned plot for this case: 
+  ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = x, y = y)) +
+  coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+  
+```{r}
+  ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = x, y = y)) +
+  coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+```
+
+Because the binned plots would obscure some of the points
+
+## 7.6 Patterns and Models
+
+From the text: "Once you’ve removed the strong relationship between carat and price, you can see what you expect in the relationship between cut and price: relative to their size, better quality diamonds are more expensive."
+
+```{r}
+library(tidyverse)
+library(modelr)
+mod <-lm(log(price)~log(carat), data=diamonds)
+
+diamonds2 <-  diamonds %>% 
+  add_residuals(mod) %>% 
+  mutate(resid=exp(resid))
+
+ggplot(diamonds2) +
+  geom_point(aes(x=carat, y=resid))
+
+
+```
+
+From the text: "Once you’ve removed the strong relationship between carat and price, you can see what you expect in the relationship between cut and price: relative to their size, better quality diamonds are more expensive."
+
+```{r}
+ggplot(diamonds2) +
+  geom_boxplot(aes(x=cut, y=resid))
+```
+
+## 7.7 gggplot2 calls
+
+It's possible to condense a lot of the data in ggplot 2 calls:
+
+```{r}
+ggplot(data=faithful, mapping=aes(x=eruptions)) +
+  geom_freqpoly(binwidth=0.25)  
+```
+
+is the same as (note the condensed code):
+
+```{r}
+ggplot(faithful, aes(x=eruptions)) +
+  geom_freqpoly(binwidth=0.25)
+```
+
