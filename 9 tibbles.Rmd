@@ -5,6 +5,10 @@ date: "9/1/2018"
 output: html_document
 ---
 
+Introduction to tibbles
+
+1. How to make tibbles:
+
 ```{r}
 library(tidyverse)
 iris.tibble <- as_tibble(iris)
@@ -25,6 +29,122 @@ tb <- tibble(
 )
 
 tb
+
+```
+
+How to use tribble() (transposed tibble) to make a tibble - note this transposes columns and rows, and it is
+customized for data entry in code:
+
+```{r}
+tribble(
+  ~x, ~y, ~z,
+  #--/--/----
+  "a",2,3.6,
+  "b",1,8.5
+)
+```
+
+Tibbles Versus data.frame: Two big differences: Printing and subsetting
+
+```{r}
+tibble(
+  a=lubridate::now() + runif(1e3) * 86400,
+  b=lubridate::today() + runif(1e3) * 30,
+  c=1:1e3,
+  d=runif(1e3),
+  e=sample(letters, 1e3, replace=TRUE)
+)
+```
+
+How to print tibbles:
+
+```{r}
+nycflights13::flights %>% 
+  print(n=10, width=inf)
+```
+
+## Subsetting tibbles
+
+```{r}
+df <- tibble(
+  x=runif(5),
+  y=rnorm(5)
+)
+df
+
+#extract by name:
+
+df$x
+
+df$y
+
+#extract by position:
+
+df[[1]]
+
+df[[1]][2]
+
+#to use these in a pipe, it requires a special placeholder, the period (or dot):
+
+df %>% .$x
+
+df %>% .[["x"]]
+
+class(df)
+
+```
+
+
+## Exercises
+
+1. How can you tell if an object is a tibble? (hint - try printing mtcars, which is a regular data frame)
+One way is class(df)
+```{r}
+print(mtcars)
+mtcars.tibble <- as.tibble(mtcars)
+class(mtcars.tibble)
+print(mtcars.tibble)
+
+```
+
+2. Compare and contrast the following operations on a data frame and an equivalent tibble. What is the difference?
+
+```{r}
+df <- data.frame(abc=1, xyz="a")
+df$x
+df[,"xyz"]
+df[,c("abc", "xyz")]
+
+
+# 3. If you have the name of a variable stored in an object, e.g. var <- "mpg", how can you extract the *reference* variable from the tibble?
+tibble1 <- tibble(abc=1, xyz="a")
+tibble1[[1]]
+
+```
+
+```{r}
+annoying <- tibble(
+  `1`=1:10,
+  `2` = `1`*2 + rnorm(length(`1`))
+)
+
+annoying #look at the data set
+
+# extract the variable called `1`
+
+annoying$`1`
+
+#print a scatterplot of 1 versus 2
+ggplot(annoying, aes(x=`1`, y=`2`)) +
+  geom_point()
+
+# create a new column which is 2 / 1
+
+annoying$`3` <- annoying$`2`/annoying$`1`
+
+#rename the columns to one, two, three
+annoying %>% 
+  rename(one = `1`, two=`2`, three = `3`)
 
 ```
 
