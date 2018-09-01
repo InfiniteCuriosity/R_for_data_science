@@ -1,0 +1,30 @@
+---
+title: "9. Tibbles.Rmd"
+author: "Russ Conte"
+date: "9/1/2018"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+iris.tibble <- as_tibble(iris)
+class(iris.tibble)
+
+tibble(
+  x=1:15,
+  y=1,
+  z=x^2+y
+)
+
+#unusual names for tibbles:
+
+tb <- tibble(
+  ':)' = "smile",
+  ' ' = "space",
+  '2000' = "number"
+)
+
+tb
+
+```
+
