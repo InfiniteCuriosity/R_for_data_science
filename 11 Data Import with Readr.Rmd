@@ -143,3 +143,49 @@ parse_number(c("123,456,789"))
 
 ## 11.3.2 Strings
 
+```{r}
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+
+x1
+x2
+```
+
+To fix these issues, put the encoding into the statement:
+
+```{r}
+parse_character(x1,locale = locale(encoding = "Latin1"))
+parse_character(x2, locale = locale(encoding = "Shift-JIS"))
+```
+
+It's possible to have R guess the encoding, here's what that looks like:
+
+```{r}
+guess_encoding(charToRaw(x2)) # it guessed OI8-R, so let's try that one:
+parse_character(x2, locale=locale(encoding = "KOI8-R"))
+```
+
+##11.3.3 Factors
+
+```{r}
+fruit <- c("Apple", "Orange", "Banana")
+parse_factor(c("Apple", "Orange", "Banana"),levels = fruit)
+```
+
+## 11.3.4 Dates, date-time and times
+
+This will parse date-time according to ISO 8601
+
+```{r}
+parse_datetime(c("2018-09-02T1310"))
+```
+
+To parse time, we will use the hms package:
+
+```{r}
+library(hms)
+parse_time("15:45")
+
+```
+
+## 11.3.5 Exercises
