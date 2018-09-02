@@ -1,0 +1,145 @@
+---
+title: "11 Data Import"
+author: "Russ Conte"
+date: "9/1/2018"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+heights <- read_csv(file =  'https://raw.githubusercontent.com/hadley/r4ds/master/data/heights.csv') #yay!
+heights
+
+```
+
+Note it is possible to read an inline CSV file:
+
+```{r}
+read_csv("a,b,c # note no commat at the end of each ROW of data
+         1,2,3
+         4,5,6")
+```
+
+looking at the newline command and NA:
+
+```{r}
+read_csv("a,b,c\n1,2,3\n4,na,6", na=".") # note first line is column names
+```
+
+Exercises
+
+1. What funciton would you use to read a file where fields are separated with "|"?
+read_delim and then set the delimiter to "|"
+
+2. Apart from file, skip and comment, what other arguments to read_csv and read_tsv have in common?
+
+read_csv(file, col_names = TRUE, col_types = NULL,
+  locale = default_locale(), na = c("", "NA"), quoted_na = TRUE,
+  quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf,
+  guess_max = min(1000, n_max), progress = show_progress())
+  
+read_tsv(file, col_names = TRUE, col_types = NULL,
+  locale = default_locale(), na = c("", "NA"), quoted_na = TRUE,
+  quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf,
+  guess_max = min(1000, n_max), progress = show_progress())
+  
+Common elements:
+col_names=TRUE
+col_types = NULL
+locale = default_locale()
+na=c("", "NA")
+quoted_na = TRUE
+quote = "\"
+comment = ""
+trim_ws=TRUE
+skip = 0
+n_max = inf
+guess_max = min(1000, nmax)
+progress = show_progress()
+
+3. What are the most important arguments to read_fwf?
+the file itself, columns positions and types.
+
+4.
+
+5. What is wrong with each of the following inline CSV files?
+
+```{r}
+read_csv("a,b,\n1,2,3\n4,5,6") # note that column 3 is not named, so R gives it the name X3
+```
+
+```{r}
+read_csv("a,b,c\n1,2\n1,2,3,4") #unequal number of columns in the data as parsed results in NA
+```
+
+Another example with an NA.
+
+## parsing a vector
+
+Note - parsing a vector converts into another type of vector, such as a logical, integer, string, etc.
+
+Example: Convert string to logical
+```{r}
+str(parse_logical(c("TRUE", "FALSE", "NA")))
+```
+
+Convert string to interger
+```{r}
+str(parse_integer(c("1", "2", "3")))
+```
+
+Convert character to actual date format:
+```{r}
+str(parse_date(c("2018-09-02", "0100-12-25")))
+```
+
+parse interger:
+```{r}
+parse_integer(c("1","333",".","456"),na=".") # note the NA goes OUTSIDE of the data
+```
+
+If parsing failes, R generates an error:
+
+```{r}
+x <- parse_integer(c("1","2","abc","."), na=".")
+```
+
+It's possible to use problems() to address parsing issues:
+```{r}
+problems(x)
+```
+
+## 11.3.1 Parsing numbers
+
+There exist three issues with numbers:
+1. People in different parts of the world write the same numbers differently:
+
+12,38 or 12.38, for example
+
+```{r}
+parse_double(c("12.38"))
+parse_double(c("12,30")) # returns an error because R (my version) is coded for the USA.
+```
+
+2. Numbers are often surrounded by symbols:
+$40.00, 45%, -$5.00
+
+parse_number handles this quite easily:
+```{r}
+parse_number(c("$1000"))
+parse_number(c("$345.78"))
+parse_number(c("45%"))
+parse_number(c("We had 78 people in attendance")) # wow! This is amazing! Wowsie!
+```
+
+
+
+3. Numbers often contain grouping characters that make them easier for humans to read, but more difficult for computers:
+123,456,789
+
+```{r}
+parse_number(c("123,456,789"))
+```
+
+## 11.3.2 Strings
+
