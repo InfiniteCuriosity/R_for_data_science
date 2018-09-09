@@ -36,3 +36,251 @@ ggplot(table1, aes(year, cases)) +
   geom_point(aes(color=country))
 ```
 
+##12.2.1 Exercises
+
+1. Using prose, describe how the variables and observations are organised in each of the sample tables.
+
+Table 1 is tidydata - each variable is a column, each observation is its own row, each value is in its own cell
+Table 2 combines type into one variable (types and cases)
+Table 3 has rates as fractions, not values
+Table 4a summarizes data but does not state what is being summarized. There are only values, no units
+Table 4b similar to Table 4a, summaries but no units, only values
+
+2. Compute the rate for table2, and table4a + table4b. You will need to perform four operations:
+
+    Extract the number of TB cases per country per year.
+    Extract the matching population per country per year.
+    Divide cases by population, and multiply by 10000.
+    Store back in the appropriate place.
+
+Which representation is easiest to work with? Which is hardest? Why?
+
+```{r}
+table1
+mutate(table1, rate=cases/population*10000)
+
+```
+
+```{r}
+table4a
+```
+
+apply gathering to table4a:
+
+```{r}
+table4a %>% 
+  gather('1999', '2000', key="year", value="cases")
+```
+
+```{r}
+table4b
+table4b %>% 
+  gather(`1999`,`2000`, key="year", value="population")
+```
+
+Now we combine tables 4a and 4b into one table. This actually uses left_join, which we will learn about later:
+
+```{r}
+tidy4a <- table4a %>% 
+  gather(`1999`,`2000`,key="year", value="cases")
+tidy4b <- table4b %>% 
+  gather(`1999`, `2000`, key="year", value="population")
+left_join(tidy4a, tidy4b)
+```
+
+Spreading
+
+```{r}
+table2
+```
+
+```{r}
+spread(table2, key=type, value=count)
+```
+
+## Exercises
+
+```{r}
+stocks <- tibble(
+  year=c(2015,2015,2016,2016),
+  half=c(1,2,1,2),
+  return=c(1.88, 0.59, 0.92, 0.17)
+)
+stocks
+
+```
+
+```{r}
+stocks %>% 
+  spread(year, return) %>% 
+  gather("year", "return", `2015`:`2016`)
+```
+
+```{r}
+table4a
+```
+
+```{r}
+table4a %>% 
+  gather(1999,2000, key="year", value="cases")
+```
+
+To fix the code, put 1999 and 2000 within `` marks:
+
+```{r}
+table4a %>% 
+  gather(`1999`,`2000`, key="year", value="cases")
+
+```
+
+```{r}
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+people
+```
+
+Let's try to spread the 'people' data set:
+
+```{r}
+people %>% 
+  spread(key="key", value="value")
+```
+
+we can fix this by adding a Year variable
+
+4. Tidy this simple tibble. Do you need to spread or gather it? What are the variables?
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes", NA, 10,
+  "no",20,12
+)
+preg
+```
+
+```{r}
+tidy5 <- preg %>%
+  gather('male', 'female', gender='male', value='female')
+tidy5
+```
+
+Separate and pull:
+
+```{r}
+table3
+```
+
+```{r}
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+```
+
+We can specify the charater to separate by:
+
+```{r}
+table3 %>% 
+  separate(rate, into=c("cases", "population"), sep="/")
+```
+
+we can ask separate to convert the character columns into numbers:
+
+```{r}
+table3 %>% 
+  separate(rate, into=c("cases", "population"), sep="/",convert = TRUE)
+```
+
+
+There are other ways to separate, such as by digit location (giving the last two years of the year)
+
+```{r}
+table3 %>% 
+  separate(year, into=c("Century", "Year"), sep=2)
+
+
+```
+
+We can use Unite to combine columns, as follows:
+
+```{r}
+table5 %>% 
+  unite(new, century, year)
+```
+
+Let's get rid of the _ in the number:
+
+```{r}
+table5 %>% 
+  unite(new, century, year, sep="")
+```
+
+## Missing Values
+
+```{r}
+stocks <- tibble(
+  year=c(2015,2015,2015,2015,2016,2016,2016),
+  qtr=c(1,2,3,4,2,3,4),
+  return=c(1.88, 0.59, 0.35, NA, 0.92, 0.17, 2.66)
+)
+stocks
+```
+
+We can make the implicit missing value explicit by spreading the data:
+
+```{r}
+stocks %>% 
+  spread(year, return)
+```
+
+It's possible to turn explicit missing values into implicit missing values, using na.rm=TRUE:
+```{r}
+stocks %>% 
+  spread(year, return) %>% 
+  gather(year, return,`2015`, `2016`, na.rm=TRUE)
+```
+
+Another way to make missing values explicit is to use complete(): (I like this solution!)
+
+```{r}
+stocks %>% 
+  complete(year, qtr)
+```
+
+## Case Study (I like this example a lot! WHO data on tuberculosis)
+
+```{r}
+who1 <- who %>% 
+  gather(
+    new_sp_m014:newrel_f65, key="key",
+    value="cases",
+    na.rm=TRUE
+  )
+who1
+```
+
+We can get some idea of the structure of the data by counting the cases:
+
+```{r}
+who1 %>% 
+  count(key)
+```
+
+```{r}
+who2 <- who1 %>% 
+  mutate(key=stringr::str_replace(key, "newrel", "rew_rel"))
+who2
+```
+
+We can split the cases using separate (this is really cool and super easy to do!)
+
+```{r}
+who3
+```
+
