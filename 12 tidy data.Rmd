@@ -1,0 +1,38 @@
+---
+title: "Tidy Data with TidyR.R"
+author: "Russ Conte"
+date: "9/9/2018"
+output: html_document
+---
+```{r}
+library(tidyverse)
+table1
+table2
+table3
+table4a
+table4b
+```
+
+An example of working with tidydata:
+
+```{r}
+table1 %>% 
+  mutate(rate=cases/population * 100000)
+```
+
+Compute cases per year:
+
+```{r}
+table1 %>% 
+  count(year, wt=cases)
+```
+
+Visualize changes over time:
+
+```{r}
+library(ggplot2)
+ggplot(table1, aes(year, cases)) +
+  geom_line(aes(group=country), color="grey50") +
+  geom_point(aes(color=country))
+```
+
