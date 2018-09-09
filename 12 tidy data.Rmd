@@ -281,6 +281,29 @@ who2
 We can split the cases using separate (this is really cool and super easy to do!)
 
 ```{r}
+who3 <- who2 %>% 
+  separate(key, c("new", "type", "sexage"), sep="_")
 who3
+```
+
+We can drop redundant columns! :)
+
+```{r}
+who3 %>% 
+  count(new)
+```
+
+```{r}
+who4 <- who3 %>% 
+  select(-new, -iso2, -iso3)
+who4
+```
+
+Now let's split sexage by splitting after the m or f character:
+
+```{r}
+who5 <- who4 %>% 
+  separate(sexage, c("sex", "age"), se=1)
+who5
 ```
 
