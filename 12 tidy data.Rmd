@@ -4,16 +4,30 @@ author: "Russ Conte"
 date: "9/9/2018"
 output: html_document
 ---
+
+Let's look at the same data four different ways (actually five ways if you count 4a and 4b as separate ways)
+
 ```{r}
 library(tidyverse)
-table1
+table1 #this is the only one of the sets here that is tidy
 table2
 table3
 table4a
 table4b
 ```
 
-An example of working with tidydata:
+What is tidydata? From the text:
+
+There are three interrelated rules which make a dataset tidy:
+
+    Each variable must have its own column.
+    Each observation must have its own row.
+    Each value must have its own cell.
+
+
+
+
+An example of working with tidydata (notice how easy this is to work with):
 
 ```{r}
 table1 %>% 
@@ -54,6 +68,9 @@ Table 4b similar to Table 4a, summaries but no units, only values
     Store back in the appropriate place.
 
 Which representation is easiest to work with? Which is hardest? Why?
+They are all challenging in separate ways, table1 is the easiest by far.
+Here is one way to calculate rates in table
+
 
 ```{r}
 table1
@@ -61,19 +78,38 @@ mutate(table1, rate=cases/population*10000)
 
 ```
 
+## 12.3.1, Gathering
+
+The issue here is that sometimes column names are not column names, but <i>values</i> in the dataset.
+Let's look at table4a as an example of this problem:
+
 ```{r}
 table4a
 ```
 
-apply gathering to table4a:
+
+The solution is to apply gathering to table4a. The process (from the text):
+
+    The set of columns that represent values, not variables. In this example, those are the columns 1999 and 2000.
+    The name of the variable whose values form the column names. I call that the key, and here it is year.
+    The name of the variable whose values are spread over the cells. I call that value, and here it’s the number of cases.
 
 ```{r}
 table4a %>% 
   gather('1999', '2000', key="year", value="cases")
 ```
 
+Much better in the gathered version!
+
+Let's look at table4b, and see how to gather the data in this table:
+
 ```{r}
 table4b
+```
+
+Now let's gather the data to transform it into tidy data (note the values in table4b are populations of each country):
+
+```{r}
 table4b %>% 
   gather(`1999`,`2000`, key="year", value="population")
 ```
@@ -88,17 +124,25 @@ tidy4b <- table4b %>%
 left_join(tidy4a, tidy4b)
 ```
 
-Spreading
+## 12.3.2 Spreading
 
+From the text: "Spreading is the opposite of gathering. You use it when an observation is scattered across multiple rows."
+
+Let's start by looking at table2:
 ```{r}
 table2
 ```
+
+The issue is that each observation is spread across two rows! We need to spread the data to make it tidy!
 
 ```{r}
 spread(table2, key=type, value=count)
 ```
 
-## Exercises
+## 12.3.3 Exercises
+
+Why are gather and spread not perfectly symmetrical? (the column names are switched, not sure what other
+asymmetries exist here)
 
 ```{r}
 stocks <- tibble(
@@ -107,18 +151,19 @@ stocks <- tibble(
   return=c(1.88, 0.59, 0.92, 0.17)
 )
 stocks
-
-```
-
-```{r}
 stocks %>% 
   spread(year, return) %>% 
   gather("year", "return", `2015`:`2016`)
+
 ```
+
+Why does the code below fail? Let's start by looking at table4a:
 
 ```{r}
 table4a
 ```
+
+What's wrong with this code?
 
 ```{r}
 table4a %>% 
@@ -132,6 +177,8 @@ table4a %>%
   gather(`1999`,`2000`, key="year", value="cases")
 
 ```
+
+3. Why does spreading this tibble fail?
 
 ```{r}
 people <- tribble(
