@@ -213,13 +213,17 @@ preg <- tribble(
 preg
 ```
 
+Let's see what happens when we gether the preg data set:
+
 ```{r}
 tidy5 <- preg %>%
   gather('male', 'female', gender='male', value='female')
 tidy5
 ```
 
-Separate and pull:
+## 12.4 Separate and unite (pull):
+
+### 12.4.1 - Separate pulls apart one column into multiple columns.
 
 ```{r}
 table3
@@ -230,7 +234,7 @@ table3 %>%
   separate(rate, into = c("cases", "population"))
 ```
 
-We can specify the charater to separate by:
+We can specify the charater to separate by (note that 'cases' and 'population' are character variables):
 
 ```{r}
 table3 %>% 
@@ -250,8 +254,6 @@ There are other ways to separate, such as by digit location (giving the last two
 ```{r}
 table3 %>% 
   separate(year, into=c("Century", "Year"), sep=2)
-
-
 ```
 
 We can use Unite to combine columns, as follows:
@@ -268,7 +270,15 @@ table5 %>%
   unite(new, century, year, sep="")
 ```
 
-## Missing Values
+## 12.5 Missing Values
+
+From the text:
+Changing the representation of a dataset brings up an important subtlety of missing values. Surprisingly, a value can be missing in one of two possible ways:
+
+    Explicitly, i.e. flagged with NA.
+    Implicitly, i.e. simply not present in the data.
+
+Example (note both kinds of NA are here - there is no value for Q1 2016, and we have an NA):
 
 ```{r}
 stocks <- tibble(
@@ -279,7 +289,7 @@ stocks <- tibble(
 stocks
 ```
 
-We can make the implicit missing value explicit by spreading the data:
+We can make the implicit missing value (Q1 2016) explicit by spreading the data:
 
 ```{r}
 stocks %>% 
@@ -301,6 +311,15 @@ stocks %>%
 ```
 
 ## Case Study (I like this example a lot! WHO data on tuberculosis)
+
+Let's start by looking at the data - it's a World Health Organization data set, 7,240 rows and 60 columns, with lots of missing data:
+
+```{r}
+who
+View(who)
+```
+
+Let's start by gathering the number of cases by year, country and iso:
 
 ```{r}
 who1 <- who %>% 
@@ -333,12 +352,14 @@ who3 <- who2 %>%
 who3
 ```
 
-We can drop redundant columns! :)
+This counts 'new', but I'm not sure why there are two rows of data reported here - what's the difference???
 
 ```{r}
 who3 %>% 
   count(new)
 ```
+
+We can drop redundant columns! :)
 
 ```{r}
 who4 <- who3 %>% 
@@ -352,5 +373,16 @@ Now let's split sexage by splitting after the m or f character:
 who5 <- who4 %>% 
   separate(sexage, c("sex", "age"), se=1)
 who5
+```
+
+Hadley and Garrett do this in one (big?) connected set of pipe commands:
+
+```{r}
+who %>%
+  gather(key, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel")) %>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
 ```
 
