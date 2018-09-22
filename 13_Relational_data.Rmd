@@ -1,0 +1,232 @@
+---
+title: "13 Relational Data.Rmd"
+author: "Russ Conte"
+date: "9/22/2018"
+output: html_document
+---
+
+## 13.1 Introduction:
+
+To work with relational data you need verbs that work with pairs of tables. There are three families of verbs designed to work with relational data:
+
+    <b>Mutating joins</b>, which add new variables to one data frame from matching observations in another.
+    <b>Filtering</b> joins, which filter observations from one data frame based on whether or not they match an observation in the other table.
+    <b>Set operations</b>, which treat observations as if they were set elements.
+
+##13.1.1 Prerequesites:
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+#13.2 nycflights13
+
+```{r}
+airlines #provides information on the names of airlies - carrier and the full airline name
+```
+
+```{r}
+airports
+```
+
+```{r}
+planes
+```
+
+```{r}
+weather
+```
+
+## 13.3 Keys
+
+From the text: "The variables used to connect each pair of tables are called keys. A key is a variable (or set of variables) that uniquely identifies an observation..."
+
+"There are two types of keys:
+
+    A primary key uniquely identifies an observation in its own table. For example, planes$tailnum is a primary key because it uniquely identifies each plane in the planes table.
+
+    A foreign key uniquely identifies an observation in another table. For example, the flights$tailnum is a foreign key because it appears in the flights table where it matches each flight to a unique plane."
+    
+Hadley and Garrett present an excellent idea to verify that certain columns are - in fact - keys. Here is their solution to that problem:
+
+"Once you’ve identified the primary keys in your tables, it’s good practice to verify that they do indeed uniquely identify each observation. One way to do that is to count() the primary keys and look for entries where n is greater than one"
+
+(this looks for duplicate tailnumbers)
+```{r}
+planes %>% 
+  count(tailnum) %>% 
+  filter(n>1)
+```
+
+Next let's check that `origin` is a key in the weather data set - is it unique?
+
+```{r}
+weather %>% 
+  count(year, month, day, hour, origin) %>% 
+  filter(n>1)
+```
+
+From the text: "If a table lacks a primary key, it’s sometimes useful to add one with mutate() and row_number(). That makes it easier to match observations if you’ve done some filtering and want to check back in with the original data. This is called a <b>surrogate key</b>."
+
+## 13.3.1 Exercises
+
+1. Add a surrogate key to flights. Note the row number is a key value
+
+```{r}
+flights %>% 
+  mutate(row=row_number()) %>% 
+  select(row, everything())
+```
+
+2. I forgot to draw the relationship between weather and airports. What is the relationship and how should it appear in the diagram?
+
+weather(origin) <-> airports(faa)
+
+3. weather only contains information for the origin (NYC) airports. If it contained weather records for all airports in the USA, what additional relation would it define with flights?
+Dest in the flights dataset would match to origin in the weather dataset
+
+4. We know that some days of the year are “special”, and fewer people than usual fly on them. How might you represent that data as a data frame? What would be the primary keys of that table? How would it connect to the existing tables?
+
+Let's start by looking at the data:
+```{r}
+counts <- flights %>% 
+  count(month,day)
+summary(counts$n)
+ggplot(counts, aes(x=counts$n)) +
+  geom_bar()
+```
+
+## 13.4 Mutating Joins
+
+From the text: "The first tool we’ll look at for combining a pair of tables is the mutating join. A mutating join allows you to combine variables from two tables. It first matches observations by their keys, then copies across variables from one table to the other."
+
+```{r}
+flights2 <- 
+  flights %>% 
+  select(year:day, hour, origin, dest, tailnum, carrier)
+flights2
+```
+
+We will add the full airline name, not just the abbreviation, to the dataset, and eliminate two columns:
+
+```{r}
+flights2 %>% 
+  select(-origin, -dest) %>% 
+  left_join(airlines, by=c("carrier"))
+```
+
+## 13.4.2, Inner Join
+
+From the text: "The simplest type of join is the inner join. An inner join matches pairs of observations whenever their keys are equal:"
+
+```{r}
+x <- tribble(
+  ~key, ~val_x,
+     1, "x1",
+     2, "x2",
+     3, "x3"
+)
+y <- tribble(
+  ~key, ~val_y,
+     1, "y1",
+     2, "y2",
+     4, "y3"
+)
+x
+y
+```
+
+Let's do an inner join:
+
+```{r}
+x %>% 
+  inner_join(y, by=c("key"))
+```
+
+From the text: <i>The most important property of an inner join is that <b>unmatched rows</b> are not included in the result.</i> This means that generally inner joins are usually not appropriate for use in analysis because it’s too easy to lose observations.
+
+## 13.4.3 Outer joins
+
+From the text:
+
+    A left join keeps all observations in x.
+    A right join keeps all observations in y.
+    A full join keeps all observations in x and y.
+
+#13.4.4 Duplite Keys
+
+```{r}
+x <- tribble(
+  ~key, ~val_x,
+  1, "x1",
+  2, "x2",
+  2, "x3",
+  3, "x4"
+)
+
+y <- tribble(
+  ~key, ~val_y,
+  1, "y1",
+  2, "y2"
+)
+
+left_join(x,y, by="key")
+
+
+```
+
+Note, when joining datasets with duplicate keys, R returns all possible combinations:
+
+```{r}
+x <- tribble(
+  ~key, ~val_x,
+  1, "x1",
+  2, "x2",
+  2, "x3",
+  3, "x4"
+)
+
+y <- tribble(
+  ~key, ~tribble,
+  1, "y1",
+  2, "y2",
+  2, "y3",
+  3, "y4"
+)
+
+left_join(x,y, by=c("key"))
+```
+
+## 13.4.5 Defining Key Columns
+
+If two datasets (tables) are joined, 'The default, by="NULL", uses all variables that appear in both tables' (from the text)
+
+```{r}
+flights %>% 
+  left_join(weather)
+```
+
+We can do a join by 'a character vector, by = "x". This is like a natural join, but uses only some of the common variables. For example, flights and planes have year variables, but they mean different things so we only want to join by tailnum.' (from the text)
+
+Note that year is in both datasets, and this joined result has year.x and year.y
+
+```{r}
+flights %>%
+  left_join(planes, by=c("tailnum"))
+```
+
+We can join by a 'named character vector: by = c("a" = "b"). This will match variable a in table x to variable b in table y. The variables from x will be used in the output.' (from the text)
+
+```{r}
+flights2 %>% 
+  left_join(airports, by=c("dest" = "faa"))
+```
+
+```{r}
+flights2 %>% 
+  left_join(airports, by = c("origin" = "faa"))
+```
+
+## 13.5 Filtering Joins
+
