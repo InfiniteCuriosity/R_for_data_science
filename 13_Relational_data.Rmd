@@ -230,3 +230,38 @@ flights2 %>%
 
 ## 13.5 Filtering Joins
 
+From the text: "Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables. There are two types:
+
+    semi_join(x, y) keeps all observations in x that have a match in y.
+    anti_join(x, y) drops all observations in x that have a match in y."
+    
+```{r}
+top_dest <- flights %>%
+  count(dest, sort=TRUE) %>% 
+  head(10)
+top_dest
+  
+```
+
+Now let's say we want to find flights that went to each of those (10?) destinations:
+
+```{r}
+flights %>%
+  filter(dest %in% top_dest$dest)
+```
+
+Same idea, a different (and easier) way:
+
+```{r}
+flights %>%
+  semi_join(top_dest)
+```
+
+From the text: "Anti-joins are useful for diagnosing join mismatches. For example, when connecting flights and planes, you might be interested to know that there are many flights that don’t have a match in planes:"
+
+```{r}
+flights %>%
+  anti_join(planes, by=c("tailnum")) %>% 
+  count(tailnum, sort=TRUE)
+```
+
