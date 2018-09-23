@@ -92,3 +92,146 @@ str_c(c("x", "y", "z"), collapse=", ")
 
 ## 14.2.3, Subsetting strings
 
+It's possible to subset strings using str_sub():
+
+```{r}
+x <- c("Apple", "Bannana", "Orange")
+str_sub(x,start = 2,5)
+```
+
+Note that negative numbers count from the end going backwards:
+
+```{r}
+str_sub(x,-3-1)
+```
+
+If the string is too short:
+
+```{r}
+str_sub(x,3,24) #extract the 3rd through the 24th characters
+```
+
+
+14.2.5 Exercises
+
+    In code that doesn’t use stringr, you’ll often see paste() and paste0(). What’s the difference between the two functions? What stringr function are they equivalent to? How do the functions differ in their handling of NA?
+
+    In your own words, describe the difference between the sep and collapse arguments to str_c().
+
+    Use str_length() and str_sub() to extract the middle character from a string. What will you do if the string has an even number of characters?
+
+    What does str_wrap() do? When might you want to use it?
+
+    What does str_trim() do? What’s the opposite of str_trim()?
+
+    Write a function that turns (e.g.) a vector c("a", "b", "c") into the string a, b, and c. Think carefully about what it should do if given a vector of length 0, 1, or 2.
+
+## 14.3.3 Regular Expressions
+
+## 14.3.1 Basic matches using Regular Expressions
+
+We'll use str_view() and str_view_all() to begin our regular expressions lessons
+
+```{r}
+x <- c("Apple", "Orange", "Pear", "Lemon", "Bannana")
+str_view(x, "e")
+```
+
+The next step up in complexity is the . (period) that matches any character except a new line:
+
+```{r}
+x
+str_view(x,".nn.")
+```
+
+
+14.3.1.1 Exercises
+
+    Explain why each of these strings don’t match a \: "\", "\\", "\\\".
+
+    How would you match the sequence "'\?
+
+    What patterns will the regular expression \..\..\.. match? How would you represent it as a string?
+
+
+## 14.3.2 Anchors
+
+From the text:
+
+ou can use:
+
+    ^ to match the start of the string.
+    $ to match the end of the string. (note the $ goes *after* the last letter in the regular expression)
+
+```{r}
+str_view(x, "^P")
+```
+
+```{r}
+str_view(x, "e$")
+```
+
+From the text: "To force a regular expression to only match a complete string, anchor it with both ^ and $:"
+
+```{r}
+x <- c("Apple iPod", "Apple", "Apple Macintosh")
+str_view(x,"^Apple$")
+```
+
+
+14.3.2.1 Exercises
+
+    How would you match the literal string "$^$"?
+
+    Given the corpus of common words in stringr::words, create regular expressions that find all words that:
+        Start with “y”.
+        End with “x”
+        Are exactly three letters long. (Don’t cheat by using str_length()!)
+        Have seven letters or more.
+
+    Since this list is long, you might want to use the match argument to str_view() to show only the matching or non-matching words.
+
+## 14.3.3 Character Classes and Alternatives
+
+From the text:
+There are four other useful tools:
+
+    \d: matches any digit.
+    \s: matches any whitespace (e.g. space, tab, newline).
+    [abc]: matches a, b, or c.
+    [^abc]: matches anything except a, b, or c.
+
+```{r}
+# Look for a literal character that normally has special meaning in a regex
+str_view(c("abc", "a.c", "a*c", "a c"), "a[.]c") # will match the period
+```
+
+```{r}
+str_view(c("abc", "a.c", "a*c", "a c"), ".[*]c") #will match the asterisk
+```
+
+```{r}
+str_view(c("abc", "a.c", "a*c", "a c"), "a[ ]") # will match white space
+```
+
+
+14.3.3.1 Exercises
+
+    Create regular expressions to find all words that:
+
+        Start with a vowel.
+
+        That only contain consonants. (Hint: thinking about matching “not”-vowels.)
+
+        End with ed, but not with eed.
+
+        End with ing or ise.
+
+    Empirically verify the rule “i before e except after c”.
+
+    Is “q” always followed by a “u”?
+
+    Write a regular expression that matches a word if it’s probably written in British English, not American English.
+
+    Create a regular expression that will match telephone numbers as commonly written in your country.
+
