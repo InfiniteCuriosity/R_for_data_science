@@ -57,3 +57,38 @@ str_length(c("Now is the time", "for all good men", "to come to the aid of their
 
 ## 14.2.2 Combining Strings
 
+To combine two or more strings, use str_c
+
+```{r}
+str_c("a", "b", "c")
+str_c("xyz", " abc")
+```
+
+We can use the sep argument to control how the strings are separated when printed out:
+
+```{r}
+str_c("abc", "xyz", sep=',')
+```
+
+If you want to print missing values as NA, use str_replace_na():
+
+```{r}
+x <-c("x", "y", NA)
+str_c("|-",x,"-|")
+str_c("|-",str_replace_na(x), "-|")
+```
+
+Note that str_c is vectorized, and (like other vectors in R) will automatically recycle shorter vectors to match longer vectors
+
+```{r}
+str_c("prefix-", c("a", "b", "c"), "-suffix")
+```
+
+To collapse a vector of strings into a single string, use collapse():
+
+```{r}
+str_c(c("x", "y", "z"), collapse=", ")
+```
+
+## 14.2.3, Subsetting strings
+
