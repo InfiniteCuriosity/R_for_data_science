@@ -1,0 +1,59 @@
+---
+title: "14 Strings.Rmd"
+author: "Russ Conte"
+date: "9/23/2018"
+output: html_document
+---
+
+#14. Strings
+
+## 14.1.1 Prerequisites
+
+```{r}
+library(tidyverse)
+library(stringr)
+```
+
+##14.2 String Basics
+
+Note - Hadley and Garrett recommend always using double quotes when quoting, not single quotes, unless quoting within a quote
+
+```{r}
+string1 <- "Four score and seven years ago"
+string2 <- 'If I want to include a "quote" in a string, I\'ll use single quotes for the string and double quotes for the quote'
+string1
+string2
+```
+
+Note that the printed version of the string is *not* the same as the string itself. So see the string itself use writeLines(x)
+
+```{r}
+x <- c("\"", "\\")
+x
+
+writeLines(x) #interesting!
+```
+
+There are ways of writing non-English characters on all platforms. For example:
+
+```{r}
+x <- "\u00b5"
+x #the Greek letter mu
+```
+
+Note that multiple strings are often stored as a character vector:
+
+```{r}
+c("First", "Second", "Third")
+```
+
+## 14.2.1 String Length
+
+Note that we will be using stringr, and all functions start with str_.
+
+```{r}
+str_length(c("Now is the time", "for all good men", "to come to the aid of their country"))
+```
+
+## 14.2.2 Combining Strings
+
