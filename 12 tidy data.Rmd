@@ -27,7 +27,8 @@ There are three interrelated rules which make a dataset tidy:
 
 
 
-An example of working with tidydata (notice how easy this is to work with):
+An example of working with tidydata (notice how easy this is to work with)
+Calculate cases per 100,000 population:
 
 ```{r}
 table1 %>% 
