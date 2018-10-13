@@ -5,6 +5,10 @@ date: "9/1/2018"
 output: html_document
 ---
 
+## 11.2 Getting Started
+
+From the text: "When you run read_csv() it prints out a column specification that gives the name and type of each column. That’s an important part of readr, which we’ll come back to in parsing a file."
+
 ```{r}
 library(tidyverse)
 heights <- read_csv(file =  'https://raw.githubusercontent.com/hadley/r4ds/master/data/heights.csv') #yay!
@@ -15,12 +19,40 @@ heights
 Note it is possible to read an inline CSV file:
 
 ```{r}
-read_csv("a,b,c # note no commat at the end of each ROW of data
+# note no comm at at the end of each ROW of data
+read_csv("a,b,c 
          1,2,3
          4,5,6")
 ```
 
-looking at the newline command and NA:
+Here is how to skip the top rows if they do not have data:
+
+```{r}
+read_csv("The first line of metadata
+         The second line of metadata
+         x,y,z
+         1,2,3", skip=2)
+
+read_csv("do not import this line,
+         a,b,c
+         4,5,6", skip=1)
+
+```
+
+If the first row does NOT have column names, here is how to tell R to NOT treat the first row as column names. R will create column names.
+
+```{r}
+read_csv("x,y,z\n1,2,3",col_names = FALSE)
+```
+
+It's possible to assign column names, too. Here's how that is done:
+
+```{r}
+read_csv("x,y,z\n1,2,3",col_names = c("First", "Second", "Third"))
+```
+
+It' virtually guarantted that data will have NAs, here is one way to deal with NAs.
+This solution treats the period as an NA:
 
 ```{r}
 read_csv("a,b,c\n1,2,3\n4,na,6", na=".") # note first line is column names
@@ -29,7 +61,12 @@ read_csv("a,b,c\n1,2,3\n4,na,6", na=".") # note first line is column names
 Exercises
 
 1. What funciton would you use to read a file where fields are separated with "|"?
-read_delim and then set the delimiter to "|"
+read_delim and then set the delimiter to "|", thus:
+
+```{r}
+library(readr)
+read_delim("1|2|3\nx|y|z",delim="|")
+```
 
 2. Apart from file, skip and comment, what other arguments to read_csv and read_tsv have in common?
 
@@ -189,3 +226,97 @@ parse_time("15:45")
 ```
 
 ## 11.3.5 Exercises
+
+1. What are the most important arguments to locale()?
+
+```{r}
+?locale
+```
+
+From the readme: "A locale object tries to capture all the defaults that can vary between countries." Thus I would conclude
+the most important arguments are the ones that specify the country.
+
+2. What happens if you try and set decimal_mark and grouping_mark to the same character?
+```{r}
+#parse_character(x1,locale = locale(encoding = "Latin1",decimal_mark = ".", grouping_mark = "."))
+```
+<font color="red">Error: `decimal_mark` and `grouping_mark` must be different</font>
+
+
+
+What happens to the default value of grouping_mark when you set decimal_mark to “,”? What happens to the default value of decimal_mark when you set the grouping_mark to “.”?
+
+3. I didn’t discuss the date_format and time_format options to locale(). What do they do? Construct an example that shows when they might be useful.
+
+```{r}
+x1=parse_date(c("2018-09-02"))
+x1
+parse_character(x1,locale = locale(encoding = "Latin1"))
+parse_character(x1, locale = locale(encoding = "Shift-JIS"))
+```
+
+5. What's the difference between read_csv and read_csv2?
+read_csv2() uses ; for separators, instead of ,. This is common in European countries which use , as the decimal separator.
+
+6. What are the most common encodings used in Europe? What are the most common encodings used in Asia? Do some googling to find out.
+From Wikipedia:
+
+    ISO 8859-1 Western Europe.
+    ISO 8859-2 Western and Central Europe.
+    ISO 8859-3 Western Europe and South European (Turkish, Maltese plus Esperanto)
+    ISO 8859-4 Western Europe and Baltic countries (Lithuania, Estonia, Latvia and Lapp)
+    ISO 8859-5 Cyrillic alphabet.
+    ISO 8859-6 Arabic.
+    ISO 8859-7 Greek.
+
+Source: https://en.wikipedia.org/wiki/Character_encoding
+
+7. Generate the correct format to parse each of the following correctly:
+
+```{r}
+d1 <- "January 1, 2010"
+
+parse_datetime("January 1, 2010", "%B %d, %Y") # note MUST have comma in the format section for this to work
+
+d2 <- "2015-Mar-07"
+parse_datetime("2015-Mar-07", "%Y-%b-%d")
+
+d3 <- "06-Jun-2017"
+parse_datetime("06-jun-2017", "%d-%b-%Y")
+
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+d5 <- "12/30/14" # Dec 30, 2014
+t1 <- "1705"
+t2 <- "11:15:10.12 PM"
+```
+
+
+## 11.4.4 Parsing a file, (not just one line of a document)
+
+From the text:
+
+The heuristic tries each of the following types, stopping when it finds a match:
+
+    logical: contains only “F”, “T”, “FALSE”, or “TRUE”.
+    integer: contains only numeric characters (and -).
+    double: contains only valid doubles (including numbers like 4.5e-5).
+    number: contains valid doubles with the grouping mark inside.
+    time: matches the default time_format.
+    date: matches the default date_format.
+    date-time: any ISO8601 date.
+
+If none of these rules apply, then the column will stay as a vector of strings.
+
+##11.4.3 Other Challenges:
+
+```{r}
+challenge2 <- read_csv(readr_example("challenge.csv"), guess_max = 1001)
+challenge2
+```
+
+## 11.5, writing to a file
+
+```{r}
+write_csv(challenge2, "challenge.csv")
+```
+
