@@ -95,9 +95,24 @@ guess_max = min(1000, nmax)
 progress = show_progress()
 
 3. What are the most important arguments to read_fwf?
-the file itself, columns positions and types.
+the file itself, columns widths/positions and types.
 
-4.
+```{r}
+cat(read_lines(fwf_sample))
+read_fwf(fwf_sample, fwf_empty(fwf_sample, col_names = c("first", "last", "state", "ssn")))
+
+```
+
+
+4.Sometimes strings in a CSV file contain commas. To prevent them from causing problems they need to be surrounded by a quoting character, like " or '. By convention, read_csv() assumes that the quoting character will be ", and if you want to change it you’ll need to use read_delim() instead. What arguments do you need to specify to read the following text into a data frame?
+"x,y\n1,'a,b'"
+
+Use the 'quote' function:
+
+```{r}
+read_csv("x,y\n1,'a,b'", quote = "'")
+```
+
 
 5. What is wrong with each of the following inline CSV files?
 
@@ -111,7 +126,7 @@ read_csv("a,b,c\n1,2\n1,2,3,4") #unequal number of columns in the data as parsed
 
 Another example with an NA.
 
-## parsing a vector
+## 11.3 parsing a vector
 
 Note - parsing a vector converts into another type of vector, such as a logical, integer, string, etc.
 
