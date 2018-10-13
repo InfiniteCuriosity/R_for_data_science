@@ -52,7 +52,8 @@ Hadley and Garrett present an excellent idea to verify that certain columns are 
 
 "Once you’ve identified the primary keys in your tables, it’s good practice to verify that they do indeed uniquely identify each observation. One way to do that is to count() the primary keys and look for entries where n is greater than one"
 
-(this looks for duplicate tailnumbers)
+(this looks for duplicate tailnumbers - a column is a key if the value = 0)
+Let's check if tailnum is a key for the planes dataset:
 ```{r}
 planes %>% 
   count(tailnum) %>% 
@@ -90,12 +91,30 @@ Dest in the flights dataset would match to origin in the weather dataset
 
 Let's start by looking at the data:
 ```{r}
-counts <- flights %>% 
-  count(month,day)
-summary(counts$n)
-ggplot(counts, aes(x=counts$n)) +
-  geom_bar()
+min_counts <- flights %>% 
+  count(month,day) %>% 
+  arrange(n) %>% 
+  head()
+min_counts
 ```
+
+Now set up a tibble that matches those dates
+
+```{r}
+special <- tribble(
+  ~month, ~day,
+  11,28,
+  11,29,
+  1,19,
+  10,12,
+  1,26,
+  8,31
+)
+special
+
+```
+
+Now link that tibble back to the Flights data set :)
 
 ## 13.4 Mutating Joins
 
