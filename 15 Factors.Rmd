@@ -1,0 +1,6 @@
+---
+title: "Factors"
+author: "Russ Conte"
+date: "10/21/2018"
+output: html_document
+---
