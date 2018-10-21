@@ -4,3 +4,134 @@ author: "Russ Conte"
 date: "10/21/2018"
 output: html_document
 ---
+## 15.1 Prerequisites
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+Let's look at an example where we have some variable that records months of the year:
+
+```{r}
+months <- c("Jan", "Feb", "Mar")
+# it is possible to mistype a month, and this is bad:
+months1 <- c("Jann", "Deb", "Car")
+#also note that these don't sort in the order we want:
+sort(months)
+```
+
+To fix this we create <i>levels</i> for our factor:
+
+```{r}
+months_levels <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+```
+
+Now it's possible to create a factor with levels:
+
+```{r}
+y1 <- factor(months, levels=months_levels)
+y1
+```
+
+Note that any factor not in the levels will be converted to NA:
+
+```{r}
+y2 <- factor(months1, levels=months_levels)
+y2
+levels(y2)
+```
+
+Note that it is always possible to access the levels of a factor: levels(factor_name)
+
+From here to the end of this chapter we'll look at the General Social Survey, and address some of the
+challenges working with factors:
+
+```{r}
+View(gss_cat)
+summary(gss_cat)
+mean(gss_cat$tvhours,na.rm = TRUE)
+```
+
+```{r}
+gss_cat %>% 
+  count(race)
+```
+
+```{r}
+gss_cat %>% 
+  count(marital)
+```
+
+Let's plot the results by race:
+
+```{r}
+ggplot(gss_cat, aes(race)) +
+  geom_bar() +
+  scale_x_discrete(drop=FALSE)
+```
+
+## 15.3.1 Exercises
+
+1. Explore the distribution of rincome (reported income). What makes the default bar chart hard to understand? How could you improve the plot?
+
+```{r}
+ggplot(gss_cat, aes(rincome)) +
+  geom_bar()+
+  scale_x_discrete(drop=FALSE)
+```
+
+The thing that makes is difficult is the text on the x-axis. It's easy to rotate the text so it's easier to read.
+
+```{r}
+ggplot(gss_cat, aes(rincome)) +
+  geom_bar()+
+  scale_x_discrete(drop=FALSE) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+2. What is the most common relig in this survey? Protestant
+
+```{r}
+ggplot(gss_cat, aes(relig)) +
+  geom_bar()+
+  scale_x_discrete(drop=FALSE) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+2a. What’s the most common partyid? Looking at it graphically, Independent
+
+```{r}
+ggplot(gss_cat, aes(partyid)) +
+  geom_bar()+
+  scale_x_discrete(drop=FALSE) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Looking at it numerically:
+
+```{r}
+gss_cat %>% 
+  count(partyid)
+```
+
+3. Which relig does denom (denomination) apply to? How can you find out with a table? How can you find out with a visualisation?
+
+```{r}
+ggplot(gss_cat, aes(relig)) +
+  geom_bar()+
+  scale_x_discrete(drop=FALSE) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+levels(gss_cat$relig)
+```
+
+```{r}
+gss_cat %>% 
+  count(relig)
+```
+
+## 15.4 Modifying Factor Order
+
