@@ -231,3 +231,13 @@ sapply(gss_cat, levels)
 ```
 
 Only income is principled, the rest are arbitrary.
+
+3. Why did moving "Not Applicable" to the front of the levels move it to the bottom of the plot? Note - there were 7,043 "not applicable" responses in income:
+
+```{r}
+gss_cat %>% 
+  count(rincome)
+```
+
+The position on the plot is determined by factor levels (of course!) and fct_relevel moves "Not Applicable" to the bottom of the plot. Problem solved :)
+

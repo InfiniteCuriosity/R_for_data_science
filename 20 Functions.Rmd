@@ -1,0 +1,62 @@
+---
+title: "19 Functions"
+author: "Russ Conte"
+date: "10/21/2018"
+output: html_document
+---
+
+# When should I write a function?
+
+Whenever I've copied and pasted any block of code more than twice (and wow that has happened before!) Example to simplify:
+
+```{r}
+library(tidyverse)
+df <- tibble::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c=rnorm(10),
+  d=rnorm(10)
+)
+df$a <- (df$a - min(df$a, na.rm=TRUE))/(max(df$a, na.rm=TRUE - min(df$a, na.rm = TRUE)))
+df$b <- (df$b - min(df$b, nb.rm=TRUE))/(max(df$b, nb.rm=TRUE - min(df$b, nb.rm = TRUE)))
+df$c <- (df$c - min(df$c, nc.rm=TRUE))/(max(df$c, nc.rm=TRUE - min(df$c, nc.rm = TRUE)))
+df$d <- (df$d - min(df$d, nd.rm=TRUE))/(max(df$d, nd.rm=TRUE - min(df$d, nd.rm = TRUE)))
+df
+df$a
+df$b
+df$c
+df$d
+```
+
+Let's try a simpler version to get the same results:
+
+```{r}
+df$a
+x <- df$a
+rng <- range(x, na.rm=TRUE)
+(x-rng[1]) / (rng[2]-rng[1])
+```
+
+```{r}
+rescale01 <-  function(x){
+  rng <-  range(x, na.rm=TRUE)
+  (x-rng[1]) / (rng[2] - rng[1])
+}
+
+rescale01(c(0,5,10)) # note that the input is a vector, it did not work when I used (0,5,10)
+rescale01(c(8,5,1,4,6,7,3,5))
+rescale01(c(1,2,3,4,5,6,7,8))
+```
+
+Hadley and Garrett's three steps to creating a function:
+
+1. Pick a good <i>name</i> for the function
+2. List the inputs, also called arguments (and I prefer calling them inputs) inside the function
+3. Place the code that I've developed in the body of the function
+3.5 Check with some verifable examples, as well as edge cases, unique cases, impossible cases
+
+```{r}
+rescale01(c(-10,0,10))
+rescale01(c(1,2,3,NA,5))
+```
+
