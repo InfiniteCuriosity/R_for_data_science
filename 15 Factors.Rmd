@@ -135,3 +135,99 @@ gss_cat %>%
 
 ## 15.4 Modifying Factor Order
 
+Example: Let's look at hours watching TV measured across regions:
+
+```{r}
+relig <- gss_cat %>% 
+  group_by(relig) %>% 
+  summarise(
+    age = mean(age, na.rm = TRUE),
+    tvhours=mean(tvhours, na.rm = TRUE),
+    n=n()
+    )
+ggplot(relig, aes(tvhours, relig)) + geom_point()
+```
+
+Let's improve on this chart:
+
+```{r}
+ggplot(relig, aes(tvhours, fct_reorder(relig, tvhours))) +
+  geom_point()
+```
+
+Hadley and Garrett recommend moving transformations as above out of aes() and into mutate. Same as above, using mutate:
+
+```{r}
+relig %>% 
+  mutate(relig = fct_reorder(relig, tvhours)) %>% 
+  ggplot(aes(tvhours, relig))+
+  geom_point()
+```
+
+What does the average amount of tv time look like when measured against income?
+
+```{r}
+rincome <- gss_cat %>% 
+  group_by(rincome) %>% 
+  summarise(
+    age = mean(age, na.rm=TRUE),
+    tvhours = mean(tvhours, na.rm=TRUE),
+    n=n()
+  )
+
+ggplot(rincome, aes(age, fct_reorder(rincome, tvhours))) +
+         geom_point()
+```
+
+```{r}
+ggplot(
+  rincome,
+  aes(age, fct_relevel(rincome, "Not applicable"))
+) +
+  geom_point()
+```
+
+(from the text) Let's use fct_reorder2() to reorder the factor by the y values associated with the largest x values:
+
+```{r}
+by_age <- gss_cat %>% 
+  filter(!is.na(age)) %>% 
+  count(age, marital) %>% 
+  group_by(age) %>% 
+  mutate(prop = n / sum(n))
+
+ggplot(by_age, aes(age, prop, color=marital)) +
+  geom_line(na.rm = TRUE)
+```
+
+
+Let's look at how to do this with bar plots:
+
+```{r}
+gss_cat %>% 
+  mutate(marital = marital %>% 
+           fct_infreq() %>% 
+           fct_rev()) %>% 
+           ggplot(aes(marital)) +
+           geom_bar()
+```
+
+
+## 15.4 1 Exercises
+
+There are some suspiciously high numbers in tvhours. Is the mean a good summary?
+
+I trust median more than mean, the median will be less impacted by outliers:
+
+```{r}
+mean(gss_cat$tvhours, na.rm = TRUE)
+median(gss_cat$tvhours, na.rm = TRUE)
+```
+
+2. For each factor in gss_cat identify whether the order of the levels is arbitrary or principled.
+
+```{r}
+sapply(gss_cat, levels)
+```
+
+Only income is principled, the rest are arbitrary.
