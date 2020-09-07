@@ -1,0 +1,293 @@
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+We will explore NYCflights13:
+
+```{r}
+nycflights13::airlines # a data set of airlines
+```
+
+```{r}
+nycflights13::airports
+```
+
+```{r}
+nycflights13::flights
+```
+
+```{r}
+nycflights13::planes
+```
+
+```{r}
+nycflights13::weather
+```
+
+```{r}
+flights # provides a tibble of flights
+View(flights)
+```
+
+From the text:
+
+All verbs work similarly:
+
+1. The first argument is a data frame.
+2. The subsequent arguments describe what to do with the data frame, using the variable names (without quotes).
+3. The result is a new data frame.
+
+##### 5.2 Filter ROWS with filter() #####
+ This will allow finding rows that match specific parameters:
+ 
+```{r}
+filter(flights, month == 1, day == 1) # finds all flights on January 1
+```
+ 
+ It is possible to save the result as a new data frame:
+ 
+```{r}
+feb02 <- filter(flights, month == 2, day == 2) # Now it's possible to do data analysis on this data set
+feb02 #in R if a result is saved, it must be called to be viewed
+```
+ 
+ To print the results AND save them, enclose the command in parentheses:
+ 
+```{r}
+(nov1 <- filter(flights, month == 11, day == 1))
+```
+ 
+ Test the same idea with the Diamonds data set:
+ 
+```{r}
+diamonds
+```
+ 
+```{r}
+(high_price_diamonds <- filter(diamonds, price>10000))
+```
+ 
+ 5.2.2 Logical Operators: &, |, !
+ 
+```{r}
+filter(flights, month == 1 & arr_time>1000)
+```
+ 
+```{r}
+filter(flights, month == 1 & arr_time>1000 & carrier == "B6")
+```
+ 
+ Here is a way to find all flights in November and December:
+ 
+```{r}
+nov_dec <- filter(flights, month == 11 | month == 12)
+# An alternate way to do this search is to us %in%:
+
+nov_december <- filter(flights, month %in% c(11,12))
+nov_december
+```
+ 
+ 5.2.3 Missing Values:
+ To determine a missing value in R, use is.na()
+ 
+```{r}
+#Find all flights with missing departure times:
+filter(flights, is.na(dep_time))
+```
+ 
+```{r}
+# find all flights with missing sched_dep_time
+filter(flights, is.na(sched_dep_time)) # none! all have data!
+```
+ 
+ 5.2.4 Exercises
+ 
+ 1. Find all flights that had an arrival delay of two or more hours (let's do this several different ways)
+ 
+```{r}
+filter(flights, arr_delay>120)
+```
+ 
+```{r}
+filter(flights, between(arr_delay, 120, 4800))
+```
+ 
+2. Flew to Houston (something I did myself in 2019)
+
+```{r}
+filter(flights, dest == "IAH" | dest == "HOU")
+```
+
+3. Were operated by United, American or Delta:
+
+```{r}
+filter(flights, carrier %in% c("UA", "DL", "AA"))
+```
+
+4. Departed in summer (July, August and September)
+
+```{r}
+filter(flights, month %in% c(7,8,9))
+```
+
+```{r}
+filter(flights, between(month, 7, 9)) # same as above, different method
+```
+
+5. Arrived more than two hours late, but did not leave late:
+
+```{r}
+filter(flights,arr_delay>120 & dep_delay<=0)
+```
+
+6. Were delayed by at least an hour, but made up over 30 minutes in flight
+
+```{r}
+filter(flights, dep_delay>=60 & arr_delay <= 30)
+```
+
+7. Departed between midnight and 6:00 am (inclusive)
+
+```{r}
+filter(flights, between(dep_time, 0, 600))
+```
+
+3. How many flights have missing dep_time? 8,255
+
+What other variables are missing? dep_delay, arr_time, arr_delay, air_time
+
+What might these represent? Cancelled or rescheduled flights
+
+```{r}
+filter(flights, is.na(dep_time))
+```
+
+##### 5.3 Arrange rows with arrange() #####
+From the text:
+arrange() works similarly to filter() except that instead of selecting rows, it changes their order. It takes a data frame and a set of column names (or more complicated expressions) to order (the rows) by. If you provide more than one column name, each additional column will be used to break ties in the values of preceding columns:
+
+```{r}
+arrange(flights, year, month, day)
+```
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+```{r}
+arrange(diamonds, desc(price))
+```
+
+```{r}
+arrange(diamonds, desc(carat))
+```
+
+5.3.1 Exercises:
+
+1. How could you use arrange() to sort all missing values to the start (hint: use is.na())
+
+```{r}
+arrange(flights, desc(is.na(dep_time)))
+```
+
+2. Sort flights to find the most delayed flights
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+Find the flights that left the earliest
+
+```{r}
+head(arrange(flights, dep_time), 200) # looking for the first 200 flights
+```
+
+3. Find the flights with the fastest (highest speed) flights
+
+```{r}
+speed <- mutate(flights, speed = distance/air_time) %>% 
+  arrange(desc(speed))
+speed
+```
+
+4. Which flights traveled the farthest?
+
+```{r}
+arrange(flights, desc(distance)) #farthest
+```
+
+Which flights traveled the shortest?
+```{r}
+arrange(flights,distance)
+```
+
+#### 5.4 Select Columns with Select ####
+
+This returns a data frame with only those columns
+
+```{r selecting three columns}
+select(flights, year, month, day)
+```
+
+How to select columns between parameters:
+
+```{r how to select columns between parameters}
+select(flights, year:day)
+```
+
+How to select all columns EXCEPT the selected columns:
+
+```{r selecting all columns EXCEPT the selected columns}
+select(flights,-(year:day))
+```
+
+There are various select functions that are extremely useful, as follows:
+
+starts_with("abc"): matches names that begin with “abc”.
+
+```{r select using start with}
+departure <- select(flights, starts_with("dep"))
+departure
+```
+
+Let's find only the arrival data:
+
+```{r selecting only the arrival columns}
+select(flights, starts_with("arr"))
+```
+
+ends_with("xyz"): matches names that end with “xyz”.
+
+```{r matching column names that end with specific characters or values}
+select(flights, ends_with("time"))
+```
+
+contains("ijk"): matches names that contain “ijk”.
+
+```{r select using Contains}
+select(flights, contains("time"))
+```
+
+5.5 Add new variable with mutate()
+
+```{r Mutate is a way to add new columns that are functions of existing columns}
+flights_sml <- select(flights,
+    year:day,
+    ends_with("delay"),
+    distance,
+    air_time)
+mutate(flights_sml,
+       gain = dep_delay - arr_delay,
+       speed = distance / air_time * 60)
+```
+
+It's possible to create new functions that refer to columns that were *just* created!
+
+```{r Referring to columns that were just created}
+mutate(flights_sml,
+       gain = dep_delay - arr_delay,
+       hours = air_time / 60,
+       gain_per_hour = gain / hours)
+```
+
